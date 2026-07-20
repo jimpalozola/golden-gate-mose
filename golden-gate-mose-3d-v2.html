@@ -25,7 +25,7 @@
 <body>
 <div id="ui">
   <h1>Golden Gate MOSE — v2</h1>
-  <div class="sub">Now with sunsets and shipping delays</div>
+  <div class="sub">Auto demo playing &mdash; drag or use controls to take over</div>
   <button id="gateBtn">&#9650; Raise the barriers</button>
   <div class="row">Storm surge (Pacific side)
     <input type="range" id="surge" min="0" max="100" value="0">
@@ -33,7 +33,7 @@
   <div class="row">Time of day
     <input type="range" id="tod" min="0" max="1000" value="150">
   </div>
-  <label><input type="checkbox" id="auto" checked> Auto day/night cycle</label>
+  <label><input type="checkbox" id="auto"> Auto day/night cycle</label>
   <button id="fogBtn">Toggle Karl the Fog</button>
   <div id="status"></div>
 </div>
@@ -262,11 +262,17 @@ const surgeEl = document.getElementById('surge');
 const todEl = document.getElementById('tod');
 const autoEl = document.getElementById('auto');
 const statusEl = document.getElementById('status');
-gateBtn.onclick = ()=>{
-  gateTarget = gateTarget ? 0 : 1;
+function setGates(v){
+  gateTarget = v;
   gateBtn.textContent = gateTarget ? '▼ Lower the barriers' : '▲ Raise the barriers';
   gateBtn.classList.toggle('raised', !!gateTarget);
-};
+}
+// ---------- auto demo (camera tour + story) ----------
+let tourCam = true;    // camera circles the bridge until the user drags/zooms
+let tourStory = true;  // surge builds, gates deploy, ships queue — until user touches controls
+let tourT = 0;
+gateBtn.onclick = ()=>{ tourStory = false; setGates(gateTarget ? 0 : 1); };
+surgeEl.oninput = ()=>{ tourStory = false; };
 todEl.oninput = ()=>{ autoEl.checked = false; };
 document.getElementById('fogBtn').onclick = ()=>{
   fogOn = !fogOn;
@@ -277,7 +283,7 @@ document.getElementById('fogBtn').onclick = ()=>{
 let theta = -0.7, phi = 1.18, radius = 440;
 const target = new THREE.Vector3(0, 15, -60);
 let dragging=false, px=0, py=0;
-addEventListener('mousedown',e=>{dragging=true;px=e.clientX;py=e.clientY});
+addEventListener('mousedown',e=>{if(e.target===renderer.domElement)tourCam=false;dragging=true;px=e.clientX;py=e.clientY});
 addEventListener('mouseup',()=>dragging=false);
 addEventListener('mousemove',e=>{
   if(!dragging) return;
@@ -285,8 +291,8 @@ addEventListener('mousemove',e=>{
   phi = Math.max(0.15, Math.min(1.45, phi));
   px=e.clientX; py=e.clientY;
 });
-addEventListener('wheel',e=>{radius=Math.max(120,Math.min(1400,radius+e.deltaY*0.5))},{passive:true});
-addEventListener('touchstart',e=>{px=e.touches[0].clientX;py=e.touches[0].clientY});
+addEventListener('wheel',e=>{tourCam=false;radius=Math.max(120,Math.min(1400,radius+e.deltaY*0.5))},{passive:true});
+addEventListener('touchstart',e=>{if(e.target===renderer.domElement)tourCam=false;px=e.touches[0].clientX;py=e.touches[0].clientY});
 addEventListener('touchmove',e=>{
   theta -= (e.touches[0].clientX-px)*0.005; phi -= (e.touches[0].clientY-py)*0.005;
   phi = Math.max(0.15, Math.min(1.45, phi));
@@ -308,6 +314,22 @@ function animate(){
   const dt = Math.min(clock.getDelta(), 0.1);
   const t = clock.getElapsedTime();
   surge = surgeEl.value/100;
+
+  // auto demo: surge builds, gates deploy, ships queue; camera circles both sides
+  tourT += dt;
+  if(tourStory){
+    const cycle = tourT % 70;
+    const surgeTarget = (cycle > 4 && cycle < 44) ? 55 : 8;
+    surgeEl.value = +surgeEl.value + (surgeTarget - surgeEl.value)*dt*0.35;
+    surge = surgeEl.value/100;
+    if(cycle > 8 && cycle < 44 && !gateTarget) setGates(1);
+    if(cycle >= 44 && gateTarget) setGates(0);
+  }
+  if(tourCam){
+    theta = -0.7 + tourT*0.09;                // one full circle per ~70s cycle
+    phi = 1.05 + 0.22*Math.sin(tourT*0.13);   // gentle rise and dip
+    radius = 430 + 120*Math.sin(tourT*0.07);  // ease closer, then back out
+  }
 
   // time of day
   if(autoEl.checked){
