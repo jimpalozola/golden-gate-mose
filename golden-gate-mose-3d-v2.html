@@ -270,7 +270,7 @@ function setGates(v){
 // ---------- auto demo (camera tour + story) ----------
 let tourCam = true;    // camera circles the bridge until the user drags/zooms
 let tourStory = true;  // surge builds, gates deploy, ships queue — until user touches controls
-let tourT = 0;
+let tourT = 0, demoSurge = 0;
 gateBtn.onclick = ()=>{ tourStory = false; setGates(gateTarget ? 0 : 1); };
 surgeEl.oninput = ()=>{ tourStory = false; };
 todEl.oninput = ()=>{ autoEl.checked = false; };
@@ -320,8 +320,9 @@ function animate(){
   if(tourStory){
     const cycle = tourT % 70;
     const surgeTarget = (cycle > 4 && cycle < 44) ? 55 : 8;
-    surgeEl.value = +surgeEl.value + (surgeTarget - surgeEl.value)*dt*0.35;
-    surge = surgeEl.value/100;
+    demoSurge += (surgeTarget - demoSurge)*dt*0.35;
+    surgeEl.value = Math.round(demoSurge);
+    surge = demoSurge/100;
     if(cycle > 8 && cycle < 44 && !gateTarget) setGates(1);
     if(cycle >= 44 && gateTarget) setGates(0);
   }
