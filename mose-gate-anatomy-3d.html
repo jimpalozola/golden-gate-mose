@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MOSE Gate Anatomy — Interactive Cutaway</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#0d1720;font-family:-apple-system,Helvetica,Arial,sans-serif}
+  #stage{position:fixed;inset:0}
+  #ui{position:fixed;top:16px;left:16px;z-index:20;background:rgba(10,20,30,.78);backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;color:#eaf2f8;width:240px}
+  #ui h1{font-size:15px;margin:0 0 2px}
+  #ui .sub{font-size:11px;color:#9fb8c9;margin-bottom:10px}
+  button{width:100%;padding:9px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;
+         background:#f1c40f;color:#222;margin-top:8px}
+  button.raised{background:#e74c3c;color:#fff}
+  button.minor{background:rgba(255,255,255,.12);color:#eaf2f8;font-weight:500;font-size:12px;padding:7px}
+  #status{margin-top:10px;font-size:12px;line-height:1.55;color:#cfe6f5;min-height:64px}
+  #status b{color:#f1c40f}
+  .lbl{position:fixed;z-index:15;font-size:11.5px;color:#eaf2f8;background:rgba(10,22,32,.82);
+       border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
+  #leader{position:fixed;inset:0;z-index:14;pointer-events:none}
+  #hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);
+        font-size:12px;z-index:20;background:rgba(10,20,30,.5);padding:5px 14px;border-radius:20px}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<svg id="leader"></svg>
+<div id="ui">
+  <h1>MOSE gate — how it works</h1>
+  <div class="sub">Architectural cutaway &middot; one of 78 gates</div>
+  <button id="gateBtn">&#9650; Raise the gate</button>
+  <button id="lblBtn" class="minor">Hide labels</button>
+  <button id="xrayBtn" class="minor">X-ray gate: on</button>
+  <div id="status"></div>
+</div>
+<div id="hint">drag to orbit &middot; scroll to zoom</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const stage = document.getElementById('stage');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9dbfd4);
+scene.fog = new THREE.FogExp2(0x9dbfd4, 0.004);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.localClippingEnabled = true;
+stage.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.5, 2000);
+
+scene.add(new THREE.HemisphereLight(0xe8f1f8, 0x33434e, 0.9));
+const sun = new THREE.DirectionalLight(0xfff2d9, 0.9);
+sun.position.set(-120, 180, -140);
+scene.add(sun);
+
+const clip = new THREE.Plane(new THREE.Vector3(0,0,1), 8);
+
+// ---------- seabed & shore ----------
+const sandMat = new THREE.MeshPhongMaterial({color:0xb0a184, side:THREE.DoubleSide, clippingPlanes:[clip]});
+const seabed = new THREE.Mesh(new THREE.PlaneGeometry(600,600), sandMat);
+seabed.rotation.x = -Math.PI/2; seabed.position.y = 1.5;
+scene.add(seabed);
+const deepFloor = new THREE.Mesh(new THREE.PlaneGeometry(600,600),
+  new THREE.MeshPhongMaterial({color:0x8a7c62}));
+deepFloor.rotation.x = -Math.PI/2; deepFloor.position.y = -14.2;
+scene.add(deepFloor);
+
+const concMat = new THREE.MeshPhongMaterial({color:0x8a979e, side:THREE.DoubleSide, clippingPlanes:[clip]});
+const embank = new THREE.Mesh(new THREE.BoxGeometry(26,30,46), concMat);
+embank.position.set(48,1,-3); scene.add(embank);
+
+// ---------- caisson (clipped for cutaway) ----------
+const caisson = new THREE.Mesh(new THREE.BoxGeometry(52,16,46), concMat);
+caisson.position.set(9,-6,-3); scene.add(caisson);
+// ghost neighbor caisson
+const ghostConcMat = new THREE.MeshPhongMaterial({color:0x8a979e, transparent:true, opacity:0.25, clippingPlanes:[clip]});
+const gCaisson = new THREE.Mesh(new THREE.BoxGeometry(30,16,46), ghostConcMat);
+gCaisson.position.set(-32,-6,-3); scene.add(gCaisson);
+
+// cut faces at z=-8
+const cutMat = new THREE.MeshBasicMaterial({color:0x66757d});
+function cutFace(w,h,x,y){
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), cutMat);
+  m.position.set(x,y,-7.98); scene.add(m);
+}
+cutFace(52,6,9,-1);      // above tunnel
+cutFace(52,5,9,-11.5);   // below tunnel
+const cutMat2 = new THREE.MeshBasicMaterial({color:0x77868e});
+const eCut = new THREE.Mesh(new THREE.PlaneGeometry(26,30), cutMat2);
+eCut.position.set(48,1,-7.98); scene.add(eCut);
+
+// ---------- service tunnel (interior room) ----------
+const tunnel = new THREE.Mesh(new THREE.BoxGeometry(52,5,10),
+  new THREE.MeshPhongMaterial({color:0x27343e, side:THREE.BackSide}));
+tunnel.position.set(9,-6.5,-3); scene.add(tunnel);
+// tunnel lights
+const tLightMat = new THREE.MeshBasicMaterial({color:0xffe9a8});
+for(let x=-12;x<=32;x+=8){
+  const l = new THREE.Mesh(new THREE.SphereGeometry(0.28,6,6), tLightMat);
+  l.position.set(x,-4.4,-4); scene.add(l);
+}
+// air pipeline along tunnel ceiling
+const pipeMat = new THREE.MeshPhongMaterial({color:0xf1c40f});
+const mainPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,50), pipeMat);
+mainPipe.rotation.z = Math.PI/2; mainPipe.position.set(9,-4.9,-6.2);
+scene.add(mainPipe);
+// cable tray
+const tray = new THREE.Mesh(new THREE.BoxGeometry(50,0.4,1.4),
+  new THREE.MeshPhongMaterial({color:0x546e7a}));
+tray.position.set(9,-8.7,-6.4); scene.add(tray);
+// riser pipe up to hinge
+const riser = new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,7.5), pipeMat);
+riser.position.set(2,-1.2,5.2); riser.rotation.x = 0.25;
+scene.add(riser);
+// engineer for scale
+const skin = new THREE.MeshPhongMaterial({color:0xe0b48c});
+const suit = new THREE.MeshPhongMaterial({color:0xdd6b1f});
+const eng = new THREE.Group();
+const legs = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.28,0.85), suit); legs.position.y=0.42; eng.add(legs);
+const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.3,0.7), suit); torso.position.y=1.15; eng.add(torso);
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.24,8,8), skin); head.position.y=1.72; eng.add(head);
+const hat = new THREE.Mesh(new THREE.CylinderGeometry(0.27,0.27,0.14), new THREE.MeshPhongMaterial({color:0xf1c40f}));
+hat.position.y=1.9; eng.add(hat);
+eng.position.set(16,-9,-4.5); scene.add(eng);
+
+// ---------- water ----------
+const water = new THREE.Mesh(new THREE.PlaneGeometry(600,600),
+  new THREE.MeshPhongMaterial({color:0x2e7ea8, transparent:true, opacity:0.42, side:THREE.DoubleSide, shininess:100}));
+water.rotation.x = -Math.PI/2; water.position.y = 13;
+scene.add(water);
+
+// ---------- recess outline on caisson top ----------
+const recess = new THREE.Mesh(new THREE.BoxGeometry(21.5,0.5,20.5),
+  new THREE.MeshPhongMaterial({color:0x5d6d75, clippingPlanes:[clip]}));
+recess.position.set(0,2.05,-2); scene.add(recess);
+
+// ---------- hinge & junction box ----------
+const hingeMat = new THREE.MeshPhongMaterial({color:0x37474f});
+const hinge = new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,20), hingeMat);
+hinge.rotation.z = Math.PI/2; hinge.position.set(0,2.6,8);
+scene.add(hinge);
+[-7,0,7].forEach(x=>{
+  const jb = new THREE.Mesh(new THREE.BoxGeometry(2.6,2.2,2.6), hingeMat);
+  jb.position.set(x,1.2,8); scene.add(jb);
+});
+
+// ---------- the gate ----------
+const gate = new THREE.Group();
+gate.position.set(0,2.6,8);
+scene.add(gate);
+const shellMat = new THREE.MeshPhongMaterial({color:0xf1c40f, transparent:true, opacity:0.5, side:THREE.DoubleSide});
+const shell = new THREE.Mesh(new THREE.BoxGeometry(20,3,20), shellMat);
+shell.position.set(0,0,-10);
+gate.add(shell);
+// internal ribs
+const ribMat = new THREE.MeshPhongMaterial({color:0xc79a08, transparent:true, opacity:0.65});
+for(let z=-16;z<=-4;z+=6){
+  const rib = new THREE.Mesh(new THREE.BoxGeometry(19,2.6,0.4), ribMat);
+  rib.position.set(0,0,z); gate.add(rib);
+}
+// ballast water + air inside
+const ballastMat = new THREE.MeshPhongMaterial({color:0x1a5276, transparent:true, opacity:0.85});
+const airMat = new THREE.MeshPhongMaterial({color:0xbfeaff, transparent:true, opacity:0.75});
+const ballast = new THREE.Mesh(new THREE.BoxGeometry(17,2.2,1), ballastMat); gate.add(ballast);
+const airVol = new THREE.Mesh(new THREE.BoxGeometry(17,2.2,1), airMat); gate.add(airVol);
+
+// ghost neighbor gate
+const ghostGate = new THREE.Group();
+ghostGate.position.set(-22,2.6,8); scene.add(ghostGate);
+const gShell = new THREE.Mesh(new THREE.BoxGeometry(20,3,20),
+  new THREE.MeshPhongMaterial({color:0xf1c40f, transparent:true, opacity:0.16}));
+gShell.position.set(0,0,-10); ghostGate.add(gShell);
+
+// ---------- compressor building on shore ----------
+const bldg = new THREE.Mesh(new THREE.BoxGeometry(11,6,10),
+  new THREE.MeshPhongMaterial({color:0xe8e2d4}));
+bldg.position.set(48,19,-3); scene.add(bldg);
+const roof = new THREE.Mesh(new THREE.BoxGeometry(12,0.8,11),
+  new THREE.MeshPhongMaterial({color:0xa8442e}));
+roof.position.set(48,22.4,-3); scene.add(roof);
+const vent = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,2.4), hingeMat);
+vent.position.set(45,23.8,-3); scene.add(vent);
+// shaft from building down to tunnel
+const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.55,22), pipeMat);
+shaft.position.set(41,4.5,-6.2); scene.add(shaft);
+
+// ---------- bubbles (compressed air flow) ----------
+const bubbleMat = new THREE.MeshBasicMaterial({color:0xdff4ff, transparent:true, opacity:0});
+const bubbles = [];
+for(let i=0;i<26;i++){
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.32,6,6), bubbleMat);
+  b.userData.t = i/26;
+  scene.add(b); bubbles.push(b);
+}
+const _v = new THREE.Vector3();
+function gateLocal(x,y,z,out){
+  out = out || new THREE.Vector3();
+  out.set(x,y,z);
+  gate.updateMatrixWorld();
+  return out.applyMatrix4(gate.matrixWorld);
+}
+function bubblePath(t, out){
+  const pts = [
+    new THREE.Vector3(41,15,-6.2),
+    new THREE.Vector3(41,-4.9,-6.2),
+    new THREE.Vector3(9,-4.9,-6.2),
+    new THREE.Vector3(2,-4,5),
+    new THREE.Vector3(0,2.6,8),
+    gateLocal(0,0,-6, _v).clone()
+  ];
+  const n = pts.length-1;
+  const seg = Math.min(n-0.0001, t*n);
+  const i = Math.floor(seg), f = seg-i;
+  return out.copy(pts[i]).lerp(pts[i+1], f);
+}
+
+// ---------- labels ----------
+const labelDefs = [
+  {t:'Flap gate — hollow steel box', side:'L', a:()=>gateLocal(0,2,-18,_v)},
+  {t:'Water ballast (holds gate down)', side:'L', a:()=>gateLocal(0,0,-16,_v)},
+  {t:'Compressed air (expels ballast)', side:'L', a:()=>gateLocal(0,0.6,-3,_v)},
+  {t:'Hinge + junction box', side:'L', a:new THREE.Vector3(0,1.8,8.6)},
+  {t:'Seabed recess (gate lies flush)', side:'L', a:new THREE.Vector3(9.8,2.1,-4)},
+  {t:'Concrete caisson (prefab, sunk)', side:'R', a:new THREE.Vector3(24,-1.5,-8)},
+  {t:'Service tunnel + systems gallery', side:'R', a:new THREE.Vector3(14,-6.5,-7.6)},
+  {t:'Air + power lines to every gate', side:'R', a:new THREE.Vector3(28,-5,-6.4)},
+  {t:'Shore plant: compressors + control', side:'R', a:new THREE.Vector3(48,21,-3)},
+  {t:'Lagoon water level', side:'R', a:new THREE.Vector3(-6,13,-24)}
+];
+const leaderSVG = document.getElementById('leader');
+leaderSVG.setAttribute('width', innerWidth); leaderSVG.setAttribute('height', innerHeight);
+const labels = labelDefs.map((d,i)=>{
+  const el = document.createElement('div');
+  el.className = 'lbl'; el.textContent = d.t;
+  document.body.appendChild(el);
+  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('stroke','rgba(255,255,255,0.55)');
+  line.setAttribute('stroke-width','1');
+  leaderSVG.appendChild(line);
+  const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  dot.setAttribute('r','2.5'); dot.setAttribute('fill','#f1c40f');
+  leaderSVG.appendChild(dot);
+  return {d, el, line, dot};
+});
+let labelsOn = true;
+const nL = labelDefs.filter(x=>x.side==='L').length;
+const nR = labelDefs.length - nL;
+function layoutLabels(){
+  const W = innerWidth, H = innerHeight;
+  let li = 0, ri = 0;
+  labels.forEach(L=>{
+    const anchor = (typeof L.d.a === 'function') ? L.d.a() : _v.copy(L.d.a);
+    const p = anchor.clone().project(camera);
+    const sx = ( p.x*0.5+0.5)*W;
+    const sy = (-p.y*0.5+0.5)*H;
+    const behind = p.z > 1;
+    let lx, ly;
+    if(L.d.side==='L'){ lx = 20; ly = H*0.30 + (li++)*34; }
+    else { lx = W-20; ly = H*0.22 + (ri++)*34; }
+    const show = labelsOn && !behind;
+    L.el.style.display = show?'block':'none';
+    L.line.style.display = show?'block':'none';
+    L.dot.style.display = show?'block':'none';
+    if(!show) return;
+    if(L.d.side==='L'){ L.el.style.left = lx+'px'; L.el.style.right=''; }
+    else { L.el.style.right = (W-lx)+'px'; L.el.style.left=''; }
+    L.el.style.top = (ly-10)+'px';
+    const ex = L.d.side==='L' ? lx + L.el.offsetWidth + 4 : lx - L.el.offsetWidth - 4;
+    L.line.setAttribute('x1', ex); L.line.setAttribute('y1', ly);
+    L.line.setAttribute('x2', sx); L.line.setAttribute('y2', sy);
+    L.dot.setAttribute('cx', sx); L.dot.setAttribute('cy', sy);
+  });
+}
+
+// ---------- state & UI ----------
+let raising = false, airFrac = 0;
+const gateBtn = document.getElementById('gateBtn');
+const statusEl = document.getElementById('status');
+gateBtn.onclick = ()=>{
+  raising = !raising;
+  gateBtn.textContent = raising ? '▼ Lower the gate' : '▲ Raise the gate';
+  gateBtn.classList.toggle('raised', raising);
+};
+document.getElementById('lblBtn').onclick = function(){
+  labelsOn = !labelsOn;
+  this.textContent = labelsOn ? 'Hide labels' : 'Show labels';
+};
+let xray = true;
+document.getElementById('xrayBtn').onclick = function(){
+  xray = !xray;
+  shellMat.opacity = xray ? 0.5 : 0.95;
+  this.textContent = 'X-ray gate: ' + (xray?'on':'off');
+};
+
+// ---------- camera orbit ----------
+let theta = 3.6, phi = 1.2, radius = 100;
+const target = new THREE.Vector3(10, 2, 0);
+let dragging=false, px=0, py=0;
+addEventListener('mousedown',e=>{dragging=true;px=e.clientX;py=e.clientY});
+addEventListener('mouseup',()=>dragging=false);
+addEventListener('mousemove',e=>{
+  if(!dragging) return;
+  theta -= (e.clientX-px)*0.005; phi -= (e.clientY-py)*0.005;
+  phi = Math.max(0.2, Math.min(1.5, phi));
+  px=e.clientX; py=e.clientY;
+});
+addEventListener('wheel',e=>{radius=Math.max(35,Math.min(320,radius+e.deltaY*0.2))},{passive:true});
+addEventListener('touchstart',e=>{px=e.touches[0].clientX;py=e.touches[0].clientY});
+addEventListener('touchmove',e=>{
+  theta -= (e.touches[0].clientX-px)*0.005; phi -= (e.touches[0].clientY-py)*0.005;
+  phi = Math.max(0.2, Math.min(1.5, phi));
+  px=e.touches[0].clientX; py=e.touches[0].clientY;
+});
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  leaderSVG.setAttribute('width', innerWidth); leaderSVG.setAttribute('height', innerHeight);
+});
+
+// ---------- animate ----------
+const MAXDEG = 50;
+const clock = new THREE.Clock();
+const _b = new THREE.Vector3();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.getElapsedTime();
+
+  airFrac = Math.max(0, Math.min(1, airFrac + (raising ? dt*0.14 : -dt*0.18)));
+  const lift = Math.max(0, Math.min(1, (airFrac-0.35)/0.55));
+  const ease = lift*lift*(3-2*lift);
+  const angle = ease*MAXDEG;
+  gate.rotation.x = THREE.MathUtils.degToRad(angle) + Math.sin(t*1.6)*0.006*ease;
+  ghostGate.rotation.x = gate.rotation.x;
+
+  // internal ballast/air volumes (along gate local z, hinge at z=0)
+  const L = 19;
+  const aLen = Math.max(0.02, L*airFrac), wLen = Math.max(0.02, L*(1-airFrac));
+  airVol.scale.z = aLen; airVol.position.set(0,0,-0.5-aLen/2);
+  ballast.scale.z = wLen; ballast.position.set(0,0,-19.5+wLen/2);
+
+  // bubbles
+  const flowing = raising && airFrac < 0.98;
+  bubbleMat.opacity = flowing ? 0.9 : Math.max(0, bubbleMat.opacity - dt*2);
+  if(bubbleMat.opacity > 0.01){
+    bubbles.forEach(b=>{
+      b.userData.t = (b.userData.t + dt*0.22) % 1;
+      bubblePath(b.userData.t, _b);
+      b.position.copy(_b);
+      const s = 0.6 + 0.5*Math.sin(b.userData.t*20);
+      b.scale.setScalar(s);
+    });
+  }
+
+  // status
+  const deg = Math.round(angle);
+  let s = 'Gate angle: <b>'+deg+'&deg;</b> &middot; Air fill: <b>'+Math.round(airFrac*100)+'%</b><br>';
+  if(!raising && airFrac<0.02) s += 'At rest: gate flooded with water ballast, lying flat in its seabed recess. Ships pass freely above.';
+  else if(raising && lift<0.05) s += 'Phase 1: compressors on shore push air through the service tunnel and hinge into the gate, expelling ballast water.';
+  else if(raising && airFrac<0.98) s += 'Phase 2: buoyancy takes over — the gate pivots up on its hinges. No motors; air does all the work.';
+  else if(raising) s += 'Raised: the gate leans into the sea at ~50&deg;, holding back the tide. Takes ~30 min for all 78 gates.';
+  else s += 'Lowering: air vents out, seawater refloods the gate, and it sinks back flush with the seabed.';
+  statusEl.innerHTML = s;
+
+  camera.position.set(
+    target.x + radius*Math.sin(phi)*Math.sin(theta),
+    target.y + radius*Math.cos(phi),
+    target.z + radius*Math.sin(phi)*Math.cos(theta));
+  camera.lookAt(target);
+  renderer.render(scene, camera);
+  layoutLabels();
+}
+animate();
+</script>
+</body>
+</html>

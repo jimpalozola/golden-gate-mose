@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>G.G.M.B. — Golden Gate Mobile Barrier Blueprint (Concept)</title>
+<style>
+  html,body{margin:0;background:#06243f;display:flex;justify-content:center;align-items:flex-start;min-height:100%}
+  svg{max-width:100vw;height:auto;display:block}
+  @media print{html,body{background:#0a3560}}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1500 1050" xmlns="http://www.w3.org/2000/svg" font-family="'Courier New',monospace">
+<defs>
+  <marker id="gar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#8fc1ee"/>
+  </marker>
+  <pattern id="ggrid" width="50" height="50" patternUnits="userSpaceOnUse">
+    <path d="M50 0 H0 V50" fill="none" stroke="#ffffff" stroke-opacity="0.05" stroke-width="1"/>
+  </pattern>
+  <pattern id="ghatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="8" stroke="#8fc1ee" stroke-width="1" stroke-opacity="0.5"/>
+  </pattern>
+</defs>
+
+<rect width="1500" height="1050" fill="#0a3560"/>
+<rect width="1500" height="1050" fill="url(#ggrid)"/>
+<rect x="25" y="25" width="1450" height="1000" fill="none" stroke="#d6e9ff" stroke-width="2"/>
+<rect x="33" y="33" width="1434" height="984" fill="none" stroke="#d6e9ff" stroke-width="0.8"/>
+
+<text x="750" y="60" text-anchor="middle" fill="#eaf4ff" font-size="22" letter-spacing="6">G.G.M.B. — GOLDEN GATE MOBILE BARRIER — CONCEPT GENERAL ARRANGEMENT</text>
+
+<!-- ============ PLAN VIEW ============ -->
+<g>
+  <rect x="55" y="80" width="530" height="400" fill="none" stroke="#d6e9ff" stroke-width="1"/>
+  <text x="65" y="102" fill="#eaf4ff" font-size="14" letter-spacing="2">PLAN — GOLDEN GATE STRAIT  (N.T.S.)</text>
+  <line x1="65" y1="108" x2="360" y2="108" stroke="#d6e9ff" stroke-width="1"/>
+
+  <g transform="translate(95,150)">
+    <circle r="16" fill="none" stroke="#8fc1ee"/>
+    <path d="M0,-13 L5,8 L0,4 L-5,8 Z" fill="#d6e9ff"/>
+    <text y="-22" text-anchor="middle" fill="#eaf4ff" font-size="11">N</text>
+  </g>
+
+  <!-- Marin (north) -->
+  <path d="M150,120 L560,120 L560,205 L470,208 L430,218 L390,226 L340,230 L280,222 L220,210 L170,190 L150,160 Z" fill="#0d4a80" stroke="#d6e9ff" stroke-width="1.5"/>
+  <text x="300" y="165" fill="#a9cae8" font-size="11" letter-spacing="2">MARIN HEADLANDS</text>
+  <text x="430" y="200" fill="#a9cae8" font-size="9">LIME POINT</text>
+
+  <!-- SF (south) -->
+  <path d="M150,470 L560,470 L560,360 L500,352 L470,340 L430,330 L390,322 L340,318 L280,326 L220,340 L175,362 L150,400 Z" fill="#0d4a80" stroke="#d6e9ff" stroke-width="1.5"/>
+  <text x="270" y="410" fill="#a9cae8" font-size="11" letter-spacing="2">SAN FRANCISCO · PRESIDIO</text>
+  <text x="400" y="345" fill="#a9cae8" font-size="9">FORT POINT</text>
+
+  <!-- bay opening right -->
+  <text x="505" y="290" fill="#8fc1ee" font-size="10" letter-spacing="1" transform="rotate(-90 505 290)">S.F. BAY</text>
+  <circle cx="540" cy="265" r="4" fill="#0d4a80" stroke="#d6e9ff"/>
+  <text x="522" y="252" fill="#a9cae8" font-size="8">ALCATRAZ</text>
+
+  <text x="105" y="280" fill="#8fc1ee" font-size="12" letter-spacing="3">PACIFIC OCEAN</text>
+
+  <!-- bridge (orange) -->
+  <line x1="405" y1="224" x2="405" y2="325" stroke="#ff8a5c" stroke-width="3.5"/>
+  <rect x="400" y="243" width="10" height="8" fill="#ff8a5c"/>
+  <rect x="400" y="296" width="10" height="8" fill="#ff8a5c"/>
+  <text x="416" y="270" fill="#ff8a5c" font-size="9" transform="rotate(-90 416 270)">GOLDEN GATE BR.</text>
+
+  <!-- barrier row (yellow) seaward of bridge -->
+  <g stroke="#ffd75e" stroke-width="3">
+    <line x1="340" y1="231" x2="340" y2="243"/>
+    <line x1="340" y1="248" x2="340" y2="260"/>
+    <line x1="340" y1="265" x2="340" y2="277"/>
+    <line x1="340" y1="282" x2="340" y2="294"/>
+    <line x1="340" y1="299" x2="340" y2="311"/>
+    <line x1="340" y1="316" x2="340" y2="317"/>
+  </g>
+  <g stroke="#8fc1ee" stroke-width="0.8" fill="none">
+    <line x1="340" y1="240" x2="240" y2="205"/>
+  </g>
+  <text x="90" y="188" fill="#eaf4ff" font-size="10">MOBILE BARRIER</text>
+  <text x="90" y="199" fill="#a9cae8" font-size="9">25 GATES · SINGLE ARRAY</text>
+  <text x="90" y="210" fill="#a9cae8" font-size="9">SPAN ≈ 1.7 KM</text>
+
+  <!-- ship channel -->
+  <line x1="200" y1="272" x2="330" y2="272" stroke="#8fc1ee" stroke-width="0.8" stroke-dasharray="6 4" marker-end="url(#gar)"/>
+  <text x="200" y="265" fill="#a9cae8" font-size="8">SHIP CHANNEL — DEEP-SILL GATES 11–14</text>
+
+  <!-- section cut A-A -->
+  <line x1="290" y1="272" x2="470" y2="272" stroke="#eaf4ff" stroke-width="1" stroke-dasharray="6 3"/>
+  <text x="280" y="266" fill="#eaf4ff" font-size="11">A</text>
+  <text x="472" y="266" fill="#eaf4ff" font-size="11">A</text>
+
+  <!-- scale bar -->
+  <g transform="translate(80,450)">
+    <line x1="0" y1="0" x2="80" y2="0" stroke="#d6e9ff" stroke-width="2"/>
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#d6e9ff"/><line x1="40" y1="-4" x2="40" y2="4" stroke="#d6e9ff"/><line x1="80" y1="-4" x2="80" y2="4" stroke="#d6e9ff"/>
+    <text x="0" y="16" fill="#a9cae8" font-size="9">0</text><text x="36" y="16" fill="#a9cae8" font-size="9">1</text><text x="72" y="16" fill="#a9cae8" font-size="9">2 KM</text>
+  </g>
+</g>
+
+<!-- ============ SECTION A-A ============ -->
+<g>
+  <rect x="600" y="80" width="560" height="400" fill="none" stroke="#d6e9ff" stroke-width="1"/>
+  <text x="610" y="102" fill="#eaf4ff" font-size="14" letter-spacing="2">SECTION A-A — BARRIER + BRIDGE</text>
+  <line x1="610" y1="108" x2="940" y2="108" stroke="#d6e9ff" stroke-width="1"/>
+
+  <!-- bridge above -->
+  <line x1="615" y1="185" x2="1145" y2="185" stroke="#ff8a5c" stroke-width="3"/>
+  <rect x="740" y="122" width="10" height="63" fill="#ff8a5c"/>
+  <rect x="1010" y="122" width="10" height="63" fill="#ff8a5c"/>
+  <path d="M615,178 Q745,120 880,150 Q1015,120 1145,178" fill="none" stroke="#ff8a5c" stroke-width="1.2"/>
+  <text x="640" y="176" fill="#ff8a5c" font-size="9">DECK +67 M</text>
+  <text x="1028" y="135" fill="#ff8a5c" font-size="9">TOWER +227 M</text>
+
+  <!-- water levels -->
+  <line x1="615" y1="255" x2="1145" y2="255" stroke="#8fc1ee" stroke-width="1"/>
+  <text x="1075" y="250" fill="#8fc1ee" font-size="10">M.S.L. ±0.00</text>
+  <line x1="615" y1="222" x2="850" y2="222" stroke="#ffd75e" stroke-width="1" stroke-dasharray="8 4"/>
+  <text x="620" y="217" fill="#ffd75e" font-size="10">DESIGN SURGE +3.50 M</text>
+  <text x="620" y="282" fill="#a9cae8" font-size="10">PACIFIC (SEA SIDE)</text>
+  <text x="1010" y="282" fill="#a9cae8" font-size="10">BAY (PROTECTED)</text>
+
+  <!-- seabed profile -->
+  <path d="M615,330 Q700,345 740,370 L760,380 L1000,380 L1020,372 Q1080,350 1145,340" fill="none" stroke="#d6e9ff" stroke-width="1.5"/>
+  <path d="M760,395 Q850,440 880,445 Q950,440 1000,398" fill="none" stroke="#8fc1ee" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="820" y="465" fill="#a9cae8" font-size="9">NATURAL CHANNEL TO −60/−110 M (DASHED)</text>
+  <text x="618" y="324" fill="#a9cae8" font-size="9">SEABED</text>
+
+  <!-- sill / caisson -->
+  <rect x="760" y="380" width="240" height="55" fill="url(#ghatch)" stroke="#d6e9ff" stroke-width="1.5"/>
+  <text x="775" y="452" fill="#eaf4ff" font-size="9">STEPPED CAISSON SILL AT −25 M (DREDGE + PILE + TREMIE)</text>
+  <rect x="785" y="400" width="190" height="20" fill="#0a3560" stroke="#d6e9ff"/>
+  <text x="800" y="414" fill="#a9cae8" font-size="8">SERVICE TUNNEL — FORT POINT ↔ LIME POINT</text>
+
+  <!-- hinge + raised gate (leaning to sea = left) -->
+  <circle cx="800" cy="378" r="6" fill="none" stroke="#ffd75e" stroke-width="2"/>
+  <circle cx="800" cy="378" r="1.5" fill="#ffd75e"/>
+  <g transform="rotate(50 800 378)">
+    <rect x="615" y="360" width="185" height="20" fill="#274a12" stroke="#ffd75e" stroke-width="2"/>
+    <line x1="660" y1="360" x2="660" y2="380" stroke="#ffd75e" stroke-width="0.8"/>
+    <line x1="705" y1="360" x2="705" y2="380" stroke="#ffd75e" stroke-width="0.8"/>
+    <line x1="750" y1="360" x2="750" y2="380" stroke="#ffd75e" stroke-width="0.8"/>
+  </g>
+  <text x="675" y="300" fill="#ffd75e" font-size="10" transform="rotate(50 675 300)">FLAP GATE 45 M — RAISED 50°</text>
+  <rect x="805" y="372" width="185" height="9" fill="none" stroke="#ffd75e" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="830" y="368" fill="#a9cae8" font-size="9">REST (BALLASTED, −25 M)</text>
+
+  <!-- dims -->
+  <g stroke="#8fc1ee" stroke-width="0.8">
+    <line x1="1150" y1="255" x2="1150" y2="380" marker-start="url(#gar)" marker-end="url(#gar)"/>
+  </g>
+  <text x="1128" y="322" fill="#8fc1ee" font-size="9" transform="rotate(-90 1128 322)">25.0 M</text>
+  <text x="620" y="472" fill="#a9cae8" font-size="9">GATES LOWERED = FULL 67 M AIR DRAFT + DEEP CHANNEL FOR SHIPPING, UNRESTRICTED</text>
+</g>
+
+<!-- ============ GATE DETAIL ============ -->
+<g>
+  <rect x="55" y="510" width="530" height="420" fill="none" stroke="#d6e9ff" stroke-width="1"/>
+  <text x="65" y="532" fill="#eaf4ff" font-size="14" letter-spacing="2">DETAIL B — DEEP-WATER FLAP GATE</text>
+  <line x1="65" y1="538" x2="330" y2="538" stroke="#d6e9ff" stroke-width="1"/>
+
+  <text x="100" y="565" fill="#a9cae8" font-size="10">PLAN</text>
+  <rect x="90" y="575" width="160" height="280" fill="none" stroke="#ffd75e" stroke-width="2"/>
+  <g stroke="#ffd75e" stroke-width="0.7">
+    <line x1="90" y1="610" x2="250" y2="610"/><line x1="90" y1="645" x2="250" y2="645"/>
+    <line x1="90" y1="680" x2="250" y2="680"/><line x1="90" y1="715" x2="250" y2="715"/>
+    <line x1="90" y1="750" x2="250" y2="750"/><line x1="90" y1="785" x2="250" y2="785"/>
+    <line x1="90" y1="820" x2="250" y2="820"/>
+  </g>
+  <line x1="80" y1="855" x2="260" y2="855" stroke="#eaf4ff" stroke-width="1" stroke-dasharray="10 3 2 3"/>
+  <text x="264" y="859" fill="#eaf4ff" font-size="9">HINGE AXIS</text>
+  <circle cx="115" cy="855" r="4" fill="none" stroke="#eaf4ff"/><circle cx="170" cy="855" r="4" fill="none" stroke="#eaf4ff"/><circle cx="225" cy="855" r="4" fill="none" stroke="#eaf4ff"/>
+  <text x="96" y="880" fill="#a9cae8" font-size="9">3 HINGES + 2 JUNCTION BOXES / GATE</text>
+
+  <g stroke="#8fc1ee" stroke-width="0.8">
+    <line x1="90" y1="905" x2="250" y2="905" marker-start="url(#gar)" marker-end="url(#gar)"/>
+    <line x1="62" y1="575" x2="62" y2="855" marker-start="url(#gar)" marker-end="url(#gar)"/>
+  </g>
+  <text x="140" y="920" fill="#8fc1ee" font-size="9">30.00 M</text>
+  <text x="53" y="720" fill="#8fc1ee" font-size="9" transform="rotate(-90 53 720)">45.0 M</text>
+  <text x="96" y="598" fill="#a9cae8" font-size="9">HEAVY RIBS — PACIFIC SWELL</text>
+
+  <text x="330" y="565" fill="#a9cae8" font-size="10">CROSS-SECTION</text>
+  <rect x="320" y="600" width="200" height="76" fill="none" stroke="#ffd75e" stroke-width="2"/>
+  <rect x="330" y="610" width="105" height="56" fill="#1a5276"/>
+  <rect x="435" y="610" width="75" height="56" fill="#bfeaff" fill-opacity="0.85"/>
+  <text x="340" y="642" fill="#eaf4ff" font-size="9">WATER BALLAST</text>
+  <text x="440" y="642" fill="#06243f" font-size="9">AIR</text>
+  <g stroke="#8fc1ee" stroke-width="0.8">
+    <line x1="530" y1="600" x2="530" y2="676" marker-start="url(#gar)" marker-end="url(#gar)"/>
+  </g>
+  <text x="538" y="642" fill="#8fc1ee" font-size="9">8.0 M</text>
+  <text x="320" y="698" fill="#a9cae8" font-size="9">DUPLEX STEEL SHELL + ICCP ANODES</text>
+  <text x="320" y="712" fill="#a9cae8" font-size="9">≈ 2× VENICE GATE — DEEP-WATER VARIANT</text>
+
+  <text x="330" y="748" fill="#a9cae8" font-size="10">NOTES</text>
+  <g fill="#a9cae8" font-size="9">
+    <text x="330" y="768">1. GATE MASS ≈ 1 100 T (VENICE ≈ 300 T)</text>
+    <text x="330" y="784">2. SWELL DAMPING SKIRT AT FREE EDGE</text>
+    <text x="330" y="800">3. REMOVABLE BY HEAVY-LIFT VESSEL</text>
+    <text x="330" y="816">4. SEISMIC ISOLATORS AT CAISSON BASE</text>
+    <text x="330" y="832">5. SILL CO-LOCATED SEAWARD OF BRIDGE —</text>
+    <text x="330" y="846">   NO LOADS ON BRIDGE FOUNDATIONS</text>
+  </g>
+</g>
+
+<!-- ============ PNEUMATIC SCHEMATIC ============ -->
+<g>
+  <rect x="600" y="510" width="400" height="420" fill="none" stroke="#d6e9ff" stroke-width="1"/>
+  <text x="610" y="532" fill="#eaf4ff" font-size="14" letter-spacing="2">PNEUMATIC + POWER SCHEMATIC</text>
+  <line x1="610" y1="538" x2="930" y2="538" stroke="#d6e9ff" stroke-width="1"/>
+
+  <g fill="none" stroke="#d6e9ff" stroke-width="1.2">
+    <rect x="640" y="555" width="150" height="34"/>
+    <rect x="640" y="615" width="150" height="34"/>
+    <rect x="640" y="675" width="150" height="34"/>
+    <rect x="640" y="735" width="150" height="34"/>
+    <rect x="640" y="795" width="150" height="34"/>
+    <rect x="640" y="855" width="150" height="34"/>
+  </g>
+  <g fill="#eaf4ff" font-size="10">
+    <text x="652" y="576">COMPRESSOR PLANTS ×2</text>
+    <text x="652" y="636">AIR RECEIVERS (BUFFER)</text>
+    <text x="652" y="696">DISTRIBUTION MANIFOLD</text>
+    <text x="652" y="756">SILL TUNNEL AIR MAIN</text>
+    <text x="652" y="816">JUNCTION BOXES (PER GATE)</text>
+    <text x="652" y="876">GATE FILL / VENT VALVES</text>
+  </g>
+  <g stroke="#ffd75e" stroke-width="1.5" fill="none">
+    <line x1="715" y1="589" x2="715" y2="615" marker-end="url(#gar)"/>
+    <line x1="715" y1="649" x2="715" y2="675" marker-end="url(#gar)"/>
+    <line x1="715" y1="709" x2="715" y2="735" marker-end="url(#gar)"/>
+    <line x1="715" y1="769" x2="715" y2="795" marker-end="url(#gar)"/>
+    <line x1="715" y1="829" x2="715" y2="855" marker-end="url(#gar)"/>
+  </g>
+  <g fill="#ffd75e">
+    <path d="M710,660 L720,666 L710,672 Z"/><path d="M720,660 L710,666 L720,672 Z"/>
+    <path d="M710,780 L720,786 L710,792 Z"/><path d="M720,780 L710,786 L720,792 Z"/>
+  </g>
+  <g fill="#a9cae8" font-size="9">
+    <text x="810" y="576">FORT POINT + LIME POINT</text>
+    <text x="810" y="588">(REDUNDANT DUAL FEED)</text>
+    <text x="810" y="636">RAPID DEPLOY RESERVE</text>
+    <text x="810" y="696">SCADA CONTROLLED</text>
+    <text x="810" y="756">IN SILL GALLERY</text>
+    <text x="810" y="816">AIR IN · WATER OUT</text>
+    <text x="810" y="876">RAISE ≈ 40 MIN</text>
+    <text x="810" y="888">LOWER ≈ 20 MIN</text>
+  </g>
+  <rect x="850" y="595" width="120" height="30" fill="none" stroke="#8fc1ee" stroke-dasharray="4 3"/>
+  <text x="858" y="614" fill="#8fc1ee" font-size="9">CONTROL ROOM (PRESIDIO)</text>
+  <line x1="850" y1="612" x2="790" y2="630" stroke="#8fc1ee" stroke-width="0.7" stroke-dasharray="3 3"/>
+</g>
+
+<!-- ============ OPERATING SEQUENCE ============ -->
+<g>
+  <rect x="1015" y="510" width="430" height="250" fill="none" stroke="#d6e9ff" stroke-width="1"/>
+  <text x="1025" y="532" fill="#eaf4ff" font-size="14" letter-spacing="2">OPERATING SEQUENCE</text>
+  <line x1="1025" y1="538" x2="1250" y2="538" stroke="#d6e9ff" stroke-width="1"/>
+
+  <g>
+    <text x="1045" y="565" fill="#a9cae8" font-size="10">1. REST</text>
+    <line x1="1035" y1="600" x2="1155" y2="600" stroke="#8fc1ee"/>
+    <rect x="1050" y="640" width="90" height="8" fill="none" stroke="#ffd75e" stroke-width="1.5"/>
+    <rect x="1035" y="648" width="120" height="14" fill="url(#ghatch)" stroke="#d6e9ff"/>
+    <text x="1038" y="690" fill="#a9cae8" font-size="8">GATE FLOODED AT −25 M</text>
+  </g>
+  <g>
+    <text x="1185" y="565" fill="#a9cae8" font-size="10">2. AIR INJECTION</text>
+    <line x1="1175" y1="600" x2="1295" y2="600" stroke="#8fc1ee"/>
+    <g transform="rotate(-25 1210 648)">
+      <rect x="1210" y="640" width="90" height="8" fill="none" stroke="#ffd75e" stroke-width="1.5"/>
+    </g>
+    <rect x="1175" y="648" width="120" height="14" fill="url(#ghatch)" stroke="#d6e9ff"/>
+    <circle cx="1218" cy="634" r="2" fill="#bfeaff"/><circle cx="1226" cy="626" r="2" fill="#bfeaff"/><circle cx="1234" cy="620" r="2" fill="#bfeaff"/>
+    <text x="1178" y="690" fill="#a9cae8" font-size="8">BALLAST EXPELLED</text>
+  </g>
+  <g>
+    <text x="1325" y="565" fill="#a9cae8" font-size="10">3. RAISED</text>
+    <line x1="1315" y1="600" x2="1435" y2="600" stroke="#8fc1ee"/>
+    <line x1="1315" y1="585" x2="1435" y2="585" stroke="#ffd75e" stroke-dasharray="6 3"/>
+    <g transform="rotate(-50 1350 648)">
+      <rect x="1350" y="640" width="90" height="8" fill="none" stroke="#ffd75e" stroke-width="1.5"/>
+    </g>
+    <rect x="1315" y="648" width="120" height="14" fill="url(#ghatch)" stroke="#d6e9ff"/>
+    <text x="1318" y="690" fill="#a9cae8" font-size="8">HOLDS SURGE TO +3.5 M</text>
+  </g>
+  <g stroke="#ffd75e" stroke-width="1" fill="none">
+    <line x1="1150" y1="620" x2="1172" y2="620" marker-end="url(#gar)"/>
+    <line x1="1292" y1="620" x2="1314" y2="620" marker-end="url(#gar)"/>
+  </g>
+  <text x="1030" y="725" fill="#a9cae8" font-size="9">GATES LOWERED IN NORMAL CONDITIONS — ZERO VISUAL + NAVIGATION IMPACT.</text>
+  <text x="1030" y="740" fill="#a9cae8" font-size="9">DEPLOYED WHEN FORECAST SURGE ≥ +150 CM AT FORT POINT GAUGE.</text>
+</g>
+
+<!-- ============ TITLE BLOCK ============ -->
+<g>
+  <rect x="1015" y="780" width="430" height="150" fill="none" stroke="#d6e9ff" stroke-width="1.5"/>
+  <line x1="1015" y1="812" x2="1445" y2="812" stroke="#d6e9ff"/>
+  <line x1="1015" y1="844" x2="1445" y2="844" stroke="#d6e9ff"/>
+  <line x1="1230" y1="812" x2="1230" y2="930" stroke="#d6e9ff"/>
+  <text x="1025" y="801" fill="#eaf4ff" font-size="13" letter-spacing="2">G.G.M.B. — GOLDEN GATE MOBILE BARRIER</text>
+  <g fill="#a9cae8" font-size="9">
+    <text x="1025" y="830">DWG: CONCEPT GENERAL ARRANGEMENT</text>
+    <text x="1240" y="830">SCALE: N.T.S. · SHEET 2 OF 2</text>
+    <text x="1025" y="862">GATES: 25 · 1 ARRAY · 1 STRAIT</text>
+    <text x="1025" y="878">GATE: W 30 M · L 45 M · T 8.0 M</text>
+    <text x="1025" y="894">DESIGN SURGE: +3.50 M · DEPLOY ≥ +150 CM</text>
+    <text x="1025" y="910">RAISE ≈ 40 MIN · LOWER ≈ 20 MIN</text>
+    <text x="1240" y="862">STATUS: CONCEPT STUDY ONLY</text>
+    <text x="1240" y="878">REF: M.O.S.E. VENEZIA — SHEET 1</text>
+    <text x="1240" y="894">DRAWN: CLAUDE · 19 JUL 2026</text>
+    <text x="1240" y="910">NOT FOR CONSTRUCTION</text>
+  </g>
+</g>
+
+<g fill="#a9cae8" font-size="9">
+  <text x="200" y="45">1</text><text x="450" y="45">2</text><text x="700" y="45">3</text><text x="950" y="45">4</text><text x="1200" y="45">5</text>
+  <text x="40" y="200">A</text><text x="40" y="450">B</text><text x="40" y="700">C</text><text x="40" y="950">D</text>
+</g>
+</svg>
+</body>
+</html>

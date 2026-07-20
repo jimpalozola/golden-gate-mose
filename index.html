@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Gate MOSE — An Operable Tidal Barrier for San Francisco Bay</title>
+<meta name="description" content="A proposal to formally study an operable tidal barrier at the Golden Gate, modeled on Venice's MOSE system, as part of the Army Corps' 2026 Bay Area sea-level-rise study.">
+<style>
+  :root{--navy:#0b2239;--deep:#081a2c;--gold:#e8a33d;--fog:#e9eef4;--slate:#5b7186;--card:#10293f;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:Georgia,'Times New Roman',serif;background:var(--fog);color:#1c2b3a;line-height:1.65}
+  header.hero{background:linear-gradient(160deg,var(--navy) 0%,var(--deep) 70%);color:#fff;padding:4.5rem 1.5rem 3.5rem;text-align:center}
+  header.hero h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:.02em;margin-bottom:.75rem}
+  header.hero h1 span{color:var(--gold)}
+  header.hero p.tag{font-size:1.2rem;max-width:46rem;margin:0 auto 1.5rem;color:#c9d6e2;font-style:italic}
+  nav{background:var(--deep);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  nav ul{display:flex;flex-wrap:wrap;justify-content:center;list-style:none;gap:.25rem;padding:.4rem}
+  nav a{color:#c9d6e2;text-decoration:none;padding:.5rem .9rem;font-family:Helvetica,Arial,sans-serif;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase;border-radius:4px}
+  nav a:hover{background:rgba(232,163,61,.15);color:var(--gold)}
+  main{max-width:60rem;margin:0 auto;padding:2.5rem 1.25rem}
+  section{margin-bottom:3rem}
+  h2{font-size:1.7rem;color:var(--navy);border-bottom:3px solid var(--gold);display:inline-block;padding-bottom:.2rem;margin-bottom:1rem}
+  p{margin-bottom:1rem}
+  .lede{font-size:1.15rem}
+  .numbers{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem;margin:1.5rem 0}
+  .num{background:var(--card);color:#fff;border-radius:8px;padding:1.25rem;text-align:center}
+  .num b{display:block;font-size:1.9rem;color:var(--gold);font-family:Helvetica,Arial,sans-serif}
+  .num small{color:#c9d6e2;font-family:Helvetica,Arial,sans-serif;font-size:.8rem;line-height:1.4;display:block;margin-top:.35rem}
+  figure{margin:1.5rem 0;text-align:center}
+  figure img{max-width:100%;border-radius:8px;box-shadow:0 3px 14px rgba(11,34,57,.18)}
+  figcaption{font-size:.85rem;color:var(--slate);margin-top:.5rem;font-family:Helvetica,Arial,sans-serif}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.25rem;margin-top:1.5rem}
+  .card{background:#fff;border-radius:8px;padding:1.4rem;box-shadow:0 2px 10px rgba(11,34,57,.10);border-top:4px solid var(--gold)}
+  .card h3{color:var(--navy);margin-bottom:.5rem;font-size:1.1rem}
+  .card p{font-size:.95rem;color:#3a4c5e}
+  .card a.go{font-family:Helvetica,Arial,sans-serif;font-size:.85rem;font-weight:bold;color:var(--navy);text-decoration:none;letter-spacing:.04em}
+  .card a.go:hover{color:var(--gold)}
+  .btn{display:inline-block;background:var(--gold);color:var(--deep);font-family:Helvetica,Arial,sans-serif;font-weight:bold;padding:.8rem 1.5rem;border-radius:6px;text-decoration:none;margin:.35rem .35rem .35rem 0}
+  .btn.alt{background:transparent;border:2px solid var(--gold);color:var(--gold)}
+  .btn:hover{filter:brightness(1.1)}
+  blockquote{border-left:4px solid var(--gold);padding:.25rem 0 .25rem 1.25rem;margin:1.5rem 0;font-style:italic;color:#33475c;font-size:1.1rem}
+  footer{background:var(--deep);color:#8fa5b8;text-align:center;padding:2rem 1rem;font-family:Helvetica,Arial,sans-serif;font-size:.85rem}
+  footer a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>GOLDEN GATE <span>MOSE</span></h1>
+  <p class="tag">Venice built a machine against the sea. The Bay Area should at least study one.</p>
+  <a class="btn" href="#the-case">The Case</a>
+  <a class="btn alt" href="assets/Golden_Gate_MOSE_Feasibility_Study.pdf">Feasibility Study (PDF)</a>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#the-case">The Case</a></li>
+    <li><a href="#numbers">The Numbers</a></li>
+    <li><a href="how-it-works.html">How MOSE Works</a></li>
+    <li><a href="#interactive">Interactive Models</a></li>
+    <li><a href="#documents">Documents</a></li>
+    <li><a href="media.html">MOSE in Action</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<section id="the-case">
+  <h2>The Case</h2>
+  <p class="lede">The San Francisco Bay's water level is set in one place: a mile-wide gap in the coastal hills that we named, before we understood how literally, the Golden Gate. When a king tide with a storm behind it arrives, the Embarcadero, the Manzanita interchange in Marin, shoreline streets in Oakland and Alameda, and low blocks in every county touching the Bay flood in the same hour. That simultaneity is the whole story.</p>
+  <p>Venice faced the same problem and built a machine for it: <strong>MOSE</strong> — 78 steel gates lying invisible on the seabed, raised by compressed air for a few hours when a dangerous tide is forecast. Since 2020 the gates have closed roughly a hundred times and turned the world's most famous drowning city into a place that simply doesn't drown anymore.</p>
+  <p>Could the Bay Area do the same thing at the Golden Gate? Nobody knows — because nobody has ever seriously studied it with modern tools. This project makes one specific, modest ask: the federal sea-level-rise study beginning in 2026, already authorized by the Water Resources Development Act of 2024, should <em>formally examine</em> an operable tidal barrier at the Golden Gate. Not build one. Study one — before rising seas and 400 miles of piecemeal seawalls foreclose the question.</p>
+  <blockquote>Maybe the study concludes it can't be done, or shouldn't. That conclusion would be worth every penny of the study that reached it.</blockquote>
+  <figure>
+    <img src="assets/golden_gate_mose_map.png" alt="Map of proposed operable tidal barrier alignment at the Golden Gate">
+    <figcaption>Concept alignment: an operable barrier at the Bay's single control point.</figcaption>
+  </figure>
+</section>
+
+<section id="numbers">
+  <h2>The Numbers</h2>
+  <div class="numbers">
+    <div class="num"><b>$110B</b><small>Regional planning estimate to armor the Bay shoreline by 2050</small></div>
+    <div class="num"><b>$230B</b><small>Estimated damages if the shoreline is not protected</small></div>
+    <div class="num"><b>400 mi</b><small>Of piecemeal perimeter defense the current approach requires</small></div>
+    <div class="num"><b>1 mile</b><small>Width of the Golden Gate — the region's single control point</small></div>
+    <div class="num"><b>10.2 ft</b><small>California's official H++ worst-case sea-level rise by 2100</small></div>
+    <div class="num"><b>~100</b><small>Times Venice's MOSE gates have closed since 2020 — and Venice doesn't flood</small></div>
+  </div>
+  <figure>
+    <img src="assets/worst_case_tide_stack_chart.png" alt="Worst-case tide stack chart for San Francisco Bay">
+    <figcaption>The stack is the story: highest astronomical tide + H++ sea-level rise + El Niño storm effects ≈ 20 ft above today's MLLW.</figcaption>
+  </figure>
+  <figure>
+    <img src="assets/sea_level_rise_scenarios_chart.png" alt="Sea level rise scenarios chart">
+    <figcaption>State guidance scenarios for sea-level rise at the Golden Gate through 2100.</figcaption>
+  </figure>
+  <figure>
+    <img src="assets/barrier_cost_comparison_chart.png" alt="Barrier cost comparison chart">
+    <figcaption>Cost comparison: a barrier at the control point vs. perimeter defense.</figcaption>
+  </figure>
+  <figure>
+    <img src="assets/golden_gate_tidal_chart.png" alt="Golden Gate tidal chart">
+    <figcaption>NOAA station 9414290 at the Golden Gate — the oldest continuously operating tide gauge in the Americas.</figcaption>
+  </figure>
+</section>
+
+<section id="interactive">
+  <h2>Interactive Models</h2>
+  <p>Explore how a buoyancy-driven barrier works — no motors, rams, or cables; just compressed air and physics.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Golden Gate MOSE in 3D</h3>
+      <p>Animated 3D visualization of flood barriers rising at the Golden Gate, with day/night cycle and shipping traffic.</p>
+      <a class="go" href="golden-gate-mose-3d-v2.html">Open model →</a>
+    </div>
+    <div class="card">
+      <h3>Gate Anatomy — Interactive Cutaway</h3>
+      <p>A cutaway of a single MOSE gate: ballast compartments, hinges, air lines, and the physics of controlled buoyancy.</p>
+      <a class="go" href="mose-gate-anatomy-3d.html">Open model →</a>
+    </div>
+    <div class="card">
+      <h3>MOSE System Blueprint</h3>
+      <p>Blueprint-style schematic of the full Venice MOSE system — shore plants, caissons, galleries, and gate arrays.</p>
+      <a class="go" href="mose-system-blueprint.html">Open blueprint →</a>
+    </div>
+    <div class="card">
+      <h3>Golden Gate Barrier Blueprint</h3>
+      <p>Concept blueprint adapting the MOSE approach to the Golden Gate's depth, currents, and shipping channel.</p>
+      <a class="go" href="golden-gate-mose-blueprint.html">Open blueprint →</a>
+    </div>
+  </div>
+</section>
+
+<section id="documents">
+  <h2>Documents</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Feasibility Study</h3>
+      <p>The full Golden Gate MOSE feasibility study: history, engineering, costs, ecology, and the path through the 2026 federal study.</p>
+      <a class="go" href="assets/Golden_Gate_MOSE_Feasibility_Study.pdf">Download PDF →</a>
+    </div>
+    <div class="card">
+      <h3>MOSE Technical Blueprints</h3>
+      <p>Printable blueprint set describing the MOSE gate and system specifications.</p>
+      <a class="go" href="assets/MOSE-blueprints.pdf">Download PDF →</a>
+    </div>
+    <div class="card">
+      <h3>How the MOSE Works</h3>
+      <p>A plain-language scientific description of the buoyancy-stabilized flap gate at the heart of the system.</p>
+      <a class="go" href="how-it-works.html">Read →</a>
+    </div>
+    <div class="card">
+      <h3>MOSE in Action</h3>
+      <p>Documentaries, news footage, and satellite imagery of Venice's gates holding back the Adriatic.</p>
+      <a class="go" href="media.html">Watch →</a>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <h2>About This Project</h2>
+  <p>Jim Palozola of Mill Valley is a serial entrepreneur and longtime Marin County resident. Over forty years he co-founded RockNet, the internet's first online music company, and Tailwinds, one of America's earliest e-commerce retailers, now in its fourth decade. He is the author of a companion proposal for an operable tidal barrier at Richardson Bay.</p>
+  <p>"I've spent forty years betting early on obvious things — solar in the 1970s, online music in 1984, internet retail in 1996. The water is the most obvious thing I've ever seen coming. Venice waited until the 1966 flood nearly destroyed it, then took fifty years to build its machine. Our 1966 hasn't happened yet. That's the opportunity, and it has a deadline."</p>
+</section>
+
+</main>
+
+<footer>
+  <p>Golden Gate MOSE Project · Marin County, California · 2026</p>
+  <p><a href="assets/Golden_Gate_MOSE_Feasibility_Study.pdf">Feasibility Study</a> · <a href="how-it-works.html">How It Works</a> · <a href="media.html">Media</a></p>
+</footer>
+
+</body>
+</html>
