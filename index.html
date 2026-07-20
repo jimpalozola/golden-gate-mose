@@ -6,20 +6,26 @@
 <title>Golden Gate MOSE — An Operable Tidal Barrier for San Francisco Bay</title>
 <meta name="description" content="A proposal to formally study an operable tidal barrier at the Golden Gate, modeled on Venice's MOSE system, as part of the Army Corps' 2026 Bay Area sea-level-rise study.">
 <style>
-  :root{--navy:#0b2239;--deep:#081a2c;--gold:#e8a33d;--fog:#e9eef4;--slate:#5b7186;--card:#10293f;}
+  :root{--navy:#0b2239;--deep:#081a2c;--gold:#f1c40f;--brick:#c44536;--teal:#14506e;--fog:#e9eef4;--slate:#5b7186;--card:#10293f;}
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:Georgia,'Times New Roman',serif;background:var(--fog);color:#1c2b3a;line-height:1.65}
-  header.hero{background:linear-gradient(160deg,var(--navy) 0%,var(--deep) 70%);color:#fff;padding:4.5rem 1.5rem 3.5rem;text-align:center}
-  header.hero h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:.02em;margin-bottom:.75rem}
+  #model{position:relative;height:64vh;min-height:360px;background:#b8d4e3}
+  #model iframe{width:100%;height:100%;border:0;display:block}
+  #modelOverlay{position:absolute;inset:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2.6rem}
+  #modelOverlay span{background:rgba(10,20,30,.72);color:#eaf2f8;font-family:Helvetica,Arial,sans-serif;font-size:.85rem;padding:.55rem 1.1rem;border-radius:20px;border:1px solid rgba(255,255,255,.25)}
+  #modelFull{position:absolute;top:.8rem;right:.9rem;background:rgba(10,20,30,.72);color:var(--gold);font-family:Helvetica,Arial,sans-serif;font-size:.8rem;font-weight:bold;padding:.45rem .85rem;border-radius:6px;text-decoration:none;border:1px solid rgba(255,255,255,.2)}
+  #modelFull:hover{background:rgba(10,20,30,.9)}
+  header.hero{background:linear-gradient(165deg,var(--teal) 0%,var(--navy) 55%,var(--deep) 100%);border-top:4px solid var(--brick);color:#fff;padding:1.9rem 1.5rem 1.7rem;text-align:center}
+  header.hero h1{font-size:clamp(1.5rem,3.5vw,2.3rem);letter-spacing:.02em;margin-bottom:.45rem}
   header.hero h1 span{color:var(--gold)}
-  header.hero p.tag{font-size:1.2rem;max-width:46rem;margin:0 auto 1.5rem;color:#c9d6e2;font-style:italic}
+  header.hero p.tag{font-size:1.05rem;max-width:46rem;margin:0 auto 1rem;color:#c9d6e2;font-style:italic}
   nav{background:var(--deep);position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.25)}
   nav ul{display:flex;flex-wrap:wrap;justify-content:center;list-style:none;gap:.25rem;padding:.4rem}
   nav a{color:#c9d6e2;text-decoration:none;padding:.5rem .9rem;font-family:Helvetica,Arial,sans-serif;font-size:.85rem;letter-spacing:.05em;text-transform:uppercase;border-radius:4px}
   nav a:hover{background:rgba(232,163,61,.15);color:var(--gold)}
   main{max-width:60rem;margin:0 auto;padding:2.5rem 1.25rem}
   section{margin-bottom:3rem}
-  h2{font-size:1.7rem;color:var(--navy);border-bottom:3px solid var(--gold);display:inline-block;padding-bottom:.2rem;margin-bottom:1rem}
+  h2{font-size:1.7rem;color:var(--navy);border-bottom:3px solid var(--brick);display:inline-block;padding-bottom:.2rem;margin-bottom:1rem}
   p{margin-bottom:1rem}
   .lede{font-size:1.15rem}
   .numbers{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem;margin:1.5rem 0}
@@ -35,7 +41,7 @@
   .card p{font-size:.95rem;color:#3a4c5e}
   .card a.go{font-family:Helvetica,Arial,sans-serif;font-size:.85rem;font-weight:bold;color:var(--navy);text-decoration:none;letter-spacing:.04em}
   .card a.go:hover{color:var(--gold)}
-  .btn{display:inline-block;background:var(--gold);color:var(--deep);font-family:Helvetica,Arial,sans-serif;font-weight:bold;padding:.8rem 1.5rem;border-radius:6px;text-decoration:none;margin:.35rem .35rem .35rem 0}
+  .btn{display:inline-block;background:var(--gold);color:var(--deep);font-family:Helvetica,Arial,sans-serif;font-weight:bold;padding:.6rem 1.25rem;border-radius:6px;text-decoration:none;margin:.3rem .3rem .3rem 0;font-size:.9rem}
   .btn.alt{background:transparent;border:2px solid var(--gold);color:var(--gold)}
   .btn:hover{filter:brightness(1.1)}
   blockquote{border-left:4px solid var(--gold);padding:.25rem 0 .25rem 1.25rem;margin:1.5rem 0;font-style:italic;color:#33475c;font-size:1.1rem}
@@ -44,6 +50,14 @@
 </style>
 </head>
 <body>
+
+<div id="model">
+  <iframe src="golden-gate-mose-3d-v2.html" title="Golden Gate MOSE interactive 3D model"></iframe>
+  <div id="modelOverlay" onclick="this.style.display='none'">
+    <span>&#9654;&nbsp; Live demo playing &mdash; click to take the controls</span>
+  </div>
+  <a id="modelFull" href="golden-gate-mose-3d-v2.html">Full screen &#8599;</a>
+</div>
 
 <header class="hero">
   <h1>GOLDEN GATE <span>MOSE</span></h1>
