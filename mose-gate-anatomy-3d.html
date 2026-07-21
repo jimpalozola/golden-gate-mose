@@ -2,51 +2,97 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MOSE Gate Anatomy — Interactive Cutaway</title>
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#0d1720;font-family:-apple-system,Helvetica,Arial,sans-serif}
-  #stage{position:fixed;inset:0}
-  #ui{position:fixed;top:16px;left:16px;z-index:20;background:rgba(10,20,30,.78);backdrop-filter:blur(8px);
-      border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;color:#eaf2f8;width:240px}
-  #ui h1{font-size:15px;margin:0 0 2px}
-  #ui .sub{font-size:11px;color:#9fb8c9;margin-bottom:10px}
-  button{width:100%;padding:9px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;
-         background:#f1c40f;color:#222;margin-top:8px}
-  button.raised{background:#e74c3c;color:#fff}
-  button.minor{background:rgba(255,255,255,.12);color:#eaf2f8;font-weight:500;font-size:12px;padding:7px}
-  #status{margin-top:10px;font-size:12px;line-height:1.55;color:#cfe6f5;min-height:64px}
-  #status b{color:#f1c40f}
-  .lbl{position:fixed;z-index:15;font-size:11.5px;color:#eaf2f8;background:rgba(10,22,32,.82);
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0d1720;
+            font-family:-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;color:#eaf2f8}
+  body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+
+  /* ---- canvas band ---- */
+  #stage{position:relative;flex:1 1 auto;min-height:260px;touch-action:pan-y;overflow:hidden}
+  #stage canvas{display:block;width:100%;height:100%}
+  .lbl{position:absolute;z-index:15;font-size:11.5px;color:#eaf2f8;background:rgba(10,22,32,.82);
        border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
-  #leader{position:fixed;inset:0;z-index:14;pointer-events:none}
-  #hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);
-        font-size:12px;z-index:20;background:rgba(10,20,30,.5);padding:5px 14px;border-radius:20px}
+  #leader{position:absolute;inset:0;z-index:14;pointer-events:none}
+  #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);
+        font-size:12px;z-index:20;background:rgba(10,20,30,.5);padding:5px 14px;border-radius:20px;pointer-events:none}
+  #back{position:absolute;top:12px;left:12px;z-index:22;color:#f1c40f;text-decoration:none;font-size:13px;
+        font-weight:600;background:rgba(10,20,30,.72);border:1px solid rgba(255,255,255,.2);
+        padding:7px 13px;border-radius:8px}
+  #back:hover{background:rgba(10,20,30,.92)}
+
+  /* ---- horizontal control band ---- */
+  #ui{flex:0 0 auto;background:#101f2b;border-top:1px solid rgba(255,255,255,.14);padding:12px 14px}
+  #ui .inner{max-width:1100px;margin:0 auto}
+  #ui h1{font-size:14px;margin:0 0 1px}
+  #ui .sub{font-size:11px;color:#9fb8c9;margin-bottom:10px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  button{padding:10px 16px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;
+         background:#f1c40f;color:#222;flex:0 0 auto}
+  button.raised{background:#e74c3c;color:#fff}
+  button.minor{background:rgba(255,255,255,.12);color:#eaf2f8;font-weight:500;font-size:12px;padding:8px 12px}
+  #status{margin-top:10px;font-size:12px;line-height:1.55;color:#cfe6f5;min-height:38px}
+  #status b{color:#f1c40f}
+  /* Landscape band on phones — see note in golden-gate-mose-3d-v2.html */
+  @media (max-width:700px){
+    #stage{flex:0 0 auto;width:100%;aspect-ratio:3/2;max-height:58vh}
+  }
+  @media (max-width:520px){
+    .bar button{flex:1 1 100%}
+    .lbl{font-size:10.5px;padding:2px 6px}
+  }
 </style>
 </head>
 <body>
-<div id="stage"></div>
-<svg id="leader"></svg>
+<div id="stage">
+  <svg id="leader"></svg>
+  <a id="back" href="index.html">&#8592; Back to the site</a>
+  <div id="hint">drag sideways to orbit &middot; scroll to zoom</div>
+</div>
 <div id="ui">
+ <div class="inner">
   <h1>MOSE gate — how it works</h1>
   <div class="sub">Architectural cutaway &middot; one of 78 gates</div>
-  <button id="gateBtn">&#9650; Raise the gate</button>
-  <button id="lblBtn" class="minor">Hide labels</button>
-  <button id="xrayBtn" class="minor">X-ray gate: on</button>
+  <div class="bar">
+    <button id="gateBtn">&#9650; Raise the gate</button>
+    <button id="lblBtn" class="minor">Hide labels</button>
+    <button id="xrayBtn" class="minor">X-ray gate: on</button>
+  </div>
   <div id="status"></div>
+ </div>
 </div>
-<div id="hint">drag to orbit &middot; scroll to zoom</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const stage = document.getElementById('stage');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9dbfd4);
 scene.fog = new THREE.FogExp2(0x9dbfd4, 0.004);
+const stageW = ()=>stage.clientWidth || 1;
+const stageH = ()=>stage.clientHeight || 1;
+
 const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(stageW(), stageH());
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.localClippingEnabled = true;
 stage.appendChild(renderer.domElement);
-const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.5, 2000);
+const camera = new THREE.PerspectiveCamera(50, stageW()/stageH(), 0.5, 2000);
+
+// 50 is a VERTICAL fov; on a narrow viewport the cutaway and its labels
+// fall outside the frame, on a very wide one it fisheyes. Clamp the
+// horizontal field instead, leaving desktop at the original 50.
+const BASE_VFOV = 50, MIN_HFOV = 66, MAX_HFOV = 92;
+function fitFov(){
+  const aspect = stageW()/stageH();
+  const lo = THREE.MathUtils.degToRad(MIN_HFOV), hi = THREE.MathUtils.degToRad(MAX_HFOV);
+  let h = 2*Math.atan(Math.tan(THREE.MathUtils.degToRad(BASE_VFOV)/2)*aspect);
+  h = Math.min(Math.max(h, lo), hi);
+  camera.fov = THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(h/2)/aspect));
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+}
+fitFov();
 
 scene.add(new THREE.HemisphereLight(0xe8f1f8, 0x33434e, 0.9));
 const sun = new THREE.DirectionalLight(0xfff2d9, 0.9);
@@ -228,11 +274,11 @@ const labelDefs = [
   {t:'Lagoon water level', side:'R', a:new THREE.Vector3(-6,13,-24)}
 ];
 const leaderSVG = document.getElementById('leader');
-leaderSVG.setAttribute('width', innerWidth); leaderSVG.setAttribute('height', innerHeight);
+leaderSVG.setAttribute('width', stageW()); leaderSVG.setAttribute('height', stageH());
 const labels = labelDefs.map((d,i)=>{
   const el = document.createElement('div');
   el.className = 'lbl'; el.textContent = d.t;
-  document.body.appendChild(el);
+  stage.appendChild(el);
   const line = document.createElementNS('http://www.w3.org/2000/svg','line');
   line.setAttribute('stroke','rgba(255,255,255,0.55)');
   line.setAttribute('stroke-width','1');
@@ -246,7 +292,7 @@ let labelsOn = true;
 const nL = labelDefs.filter(x=>x.side==='L').length;
 const nR = labelDefs.length - nL;
 function layoutLabels(){
-  const W = innerWidth, H = innerHeight;
+  const W = stageW(), H = stageH();
   let li = 0, ri = 0;
   labels.forEach(L=>{
     const anchor = (typeof L.d.a === 'function') ? L.d.a() : _v.copy(L.d.a);
@@ -296,7 +342,7 @@ document.getElementById('xrayBtn').onclick = function(){
 let theta = 3.6, phi = 1.2, radius = 100;
 const target = new THREE.Vector3(10, 2, 0);
 let dragging=false, px=0, py=0;
-addEventListener('mousedown',e=>{dragging=true;px=e.clientX;py=e.clientY});
+renderer.domElement.addEventListener('mousedown',e=>{dragging=true;px=e.clientX;py=e.clientY});
 addEventListener('mouseup',()=>dragging=false);
 addEventListener('mousemove',e=>{
   if(!dragging) return;
@@ -304,18 +350,39 @@ addEventListener('mousemove',e=>{
   phi = Math.max(0.2, Math.min(1.5, phi));
   px=e.clientX; py=e.clientY;
 });
-addEventListener('wheel',e=>{radius=Math.max(35,Math.min(320,radius+e.deltaY*0.2))},{passive:true});
-addEventListener('touchstart',e=>{px=e.touches[0].clientX;py=e.touches[0].clientY});
-addEventListener('touchmove',e=>{
-  theta -= (e.touches[0].clientX-px)*0.005; phi -= (e.touches[0].clientY-py)*0.005;
+stage.addEventListener('wheel',e=>{radius=Math.max(35,Math.min(320,radius+e.deltaY*0.2))},{passive:true});
+
+// Sideways drags orbit; vertical swipes are left to the page so the
+// cutaway never traps the scroll on a phone.
+let touchMode=null, tsx=0, tsy=0;
+stage.addEventListener('touchstart',e=>{
+  const t=e.touches[0]; tsx=px=t.clientX; tsy=py=t.clientY; touchMode=null;
+},{passive:true});
+stage.addEventListener('touchmove',e=>{
+  if(e.touches.length>1) return;
+  const t=e.touches[0];
+  if(touchMode===null){
+    const dx=Math.abs(t.clientX-tsx), dy=Math.abs(t.clientY-tsy);
+    if(dx+dy < 8) return;
+    touchMode = dx>dy ? 'orbit' : 'scroll';
+    if(touchMode==='orbit'){ px=t.clientX; py=t.clientY; }
+  }
+  if(touchMode!=='orbit') return;
+  e.preventDefault();
+  theta -= (t.clientX-px)*0.005; phi -= (t.clientY-py)*0.005;
   phi = Math.max(0.2, Math.min(1.5, phi));
-  px=e.touches[0].clientX; py=e.touches[0].clientY;
-});
-addEventListener('resize',()=>{
-  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
-  leaderSVG.setAttribute('width', innerWidth); leaderSVG.setAttribute('height', innerHeight);
-});
+  px=t.clientX; py=t.clientY;
+},{passive:false});
+stage.addEventListener('touchend',()=>{touchMode=null},{passive:true});
+
+function resize(){
+  fitFov();
+  renderer.setSize(stageW(), stageH());
+  leaderSVG.setAttribute('width', stageW()); leaderSVG.setAttribute('height', stageH());
+}
+if(window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+addEventListener('resize', resize);
+addEventListener('orientationchange', ()=>setTimeout(resize,150));
 
 // ---------- animate ----------
 const MAXDEG = 50;

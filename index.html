@@ -9,12 +9,18 @@
   :root{--navy:#0b2239;--deep:#081a2c;--gold:#f1c40f;--brick:#c44536;--teal:#14506e;--fog:#e9eef4;--slate:#5b7186;--card:#10293f;}
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:Georgia,'Times New Roman',serif;background:var(--fog);color:#1c2b3a;line-height:1.65}
-  #model{position:relative;height:64vh;min-height:360px;background:#b8d4e3}
-  #model iframe{width:100%;height:100%;border:0;display:block}
-  #modelOverlay{position:absolute;inset:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2.6rem}
-  #modelOverlay span{background:rgba(10,20,30,.72);color:#eaf2f8;font-family:Helvetica,Arial,sans-serif;font-size:.85rem;padding:.55rem 1.1rem;border-radius:20px;border:1px solid rgba(255,255,255,.25)}
-  #modelFull{position:absolute;top:.8rem;right:.9rem;background:rgba(10,20,30,.72);color:var(--gold);font-family:Helvetica,Arial,sans-serif;font-size:.8rem;font-weight:bold;padding:.45rem .85rem;border-radius:6px;text-decoration:none;border:1px solid rgba(255,255,255,.2)}
-  #modelFull:hover{background:rgba(10,20,30,.9)}
+  /* Model band: a wide, uncluttered moving image. Controls live on the
+     dedicated page, so the embed never competes for touch or vertical room. */
+  #model{position:relative;background:#b8d4e3;aspect-ratio:16/10;max-height:60vh;min-height:230px}
+  #model iframe{width:100%;height:100%;border:0;display:block;pointer-events:none}
+  #modelCaption{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;
+    justify-content:center;gap:.9rem;flex-wrap:wrap;padding:.9rem 1rem 1.05rem;
+    background:linear-gradient(to top,rgba(8,20,32,.82),rgba(8,20,32,0));pointer-events:none}
+  #modelCaption span{color:#dce9f3;font-family:Helvetica,Arial,sans-serif;font-size:.82rem;font-style:italic}
+  #modelCaption a{pointer-events:auto;background:var(--gold);color:var(--deep);font-family:Helvetica,Arial,sans-serif;
+    font-size:.85rem;font-weight:bold;padding:.5rem 1.05rem;border-radius:6px;text-decoration:none;white-space:nowrap}
+  #modelCaption a:hover{filter:brightness(1.1)}
+  @media (max-width:600px){#model{aspect-ratio:4/3;max-height:52vh}}
   header.hero{background:linear-gradient(165deg,var(--teal) 0%,var(--navy) 55%,var(--deep) 100%);border-top:4px solid var(--brick);color:#fff;padding:1.9rem 1.5rem 1.7rem;text-align:center}
   header.hero h1{font-size:clamp(1.5rem,3.5vw,2.3rem);letter-spacing:.02em;margin-bottom:.45rem}
   header.hero h1 span{color:var(--gold)}
@@ -59,11 +65,12 @@
 <body>
 
 <div id="model">
-  <iframe src="golden-gate-mose-3d-v2.html" title="Golden Gate MOSE interactive 3D model"></iframe>
-  <div id="modelOverlay" onclick="this.style.display='none'">
-    <span>&#9654;&nbsp; Live demo playing &mdash; click to take the controls</span>
+  <iframe src="golden-gate-mose-3d-v2.html?embed=1" title="Golden Gate MOSE interactive 3D model"
+          loading="eager" scrolling="no"></iframe>
+  <div id="modelCaption">
+    <span>A storm tide builds, the barriers rise, the Bay holds.</span>
+    <a href="golden-gate-mose-3d-v2.html">Explore the model &#8594;</a>
   </div>
-  <a id="modelFull" href="golden-gate-mose-3d-v2.html">Full screen &#8599;</a>
 </div>
 
 <header class="hero">

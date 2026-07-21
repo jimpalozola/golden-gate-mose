@@ -2,55 +2,119 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Golden Gate MOSE v2 — Day/Night + Cargo Queue</title>
 <style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#0b1520;font-family:-apple-system,Helvetica,Arial,sans-serif}
-  #ui{position:fixed;top:16px;left:16px;z-index:10;background:rgba(10,20,30,.72);backdrop-filter:blur(8px);
-      border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:16px 18px;color:#eaf2f8;width:250px}
-  #ui h1{font-size:15px;margin:0 0 2px}
-  #ui .sub{font-size:11px;color:#9fb8c9;margin-bottom:12px}
-  button{width:100%;padding:10px;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;
-         background:#f1c40f;color:#222;transition:background .2s}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0b1520;
+            font-family:-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;color:#eaf2f8}
+  body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+
+  /* ---- canvas band ---- */
+  #stage{position:relative;flex:1 1 auto;min-height:240px;background:#b8d4e3;touch-action:pan-y;overflow:hidden}
+  #stage canvas{display:block;width:100%;height:100%}
+  #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);
+        font-size:12px;background:rgba(10,20,30,.5);padding:5px 14px;border-radius:20px;pointer-events:none}
+  #back{position:absolute;top:12px;left:12px;z-index:5;color:#f1c40f;text-decoration:none;font-size:13px;
+        font-weight:600;background:rgba(10,20,30,.72);border:1px solid rgba(255,255,255,.2);
+        padding:7px 13px;border-radius:8px}
+  #back:hover{background:rgba(10,20,30,.92)}
+
+  /* ---- horizontal control band ---- */
+  #ui{flex:0 0 auto;background:#0e1e2c;border-top:1px solid rgba(255,255,255,.14);padding:12px 14px}
+  #ui .inner{max-width:1100px;margin:0 auto}
+  #ui h1{font-size:14px;margin:0 0 1px}
+  #ui .sub{font-size:11px;color:#9fb8c9;margin-bottom:10px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end}
+  .ctl{flex:1 1 150px;min-width:130px}
+  .ctl span{display:block;font-size:11px;color:#9fb8c9;margin-bottom:3px}
+  input[type=range]{width:100%;margin:0;accent-color:#f1c40f}
+  button{padding:10px 16px;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;
+         background:#f1c40f;color:#222;transition:background .2s;flex:0 0 auto}
   button.raised{background:#e74c3c;color:#fff}
-  .row{margin-top:12px;font-size:12px}
-  input[type=range]{width:100%}
-  label{font-size:12px;display:flex;align-items:center;gap:6px;margin-top:6px}
+  button.minor{background:rgba(255,255,255,.12);color:#eaf2f8;font-weight:500;font-size:12px;padding:8px 12px}
+  .chk{font-size:12px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto;cursor:pointer}
   #status{margin-top:10px;font-size:12px;line-height:1.5;color:#cfe6f5}
   .ok{color:#2ecc71;font-weight:700}.warn{color:#e67e22;font-weight:700}.bad{color:#e74c3c;font-weight:700}
-  #fogBtn{margin-top:10px;background:rgba(255,255,255,.12);color:#eaf2f8;font-weight:500;font-size:12px;padding:7px}
-  #hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.55);
-        font-size:12px;z-index:10;background:rgba(10,20,30,.5);padding:6px 14px;border-radius:20px}
+  /* On a phone, don't let the canvas stretch to fill a tall screen: a
+     portrait box forces a very wide FOV and the bridge ends up small in
+     a lot of empty sky. Pin it to a landscape band instead. */
+  @media (max-width:700px){
+    #stage{flex:0 0 auto;width:100%;aspect-ratio:3/2;max-height:58vh}
+  }
+  @media (max-width:520px){
+    #gateBtn,#fogBtn{flex:1 1 100%}
+    #ui .sub{margin-bottom:8px}
+  }
+
+  /* ---- embed mode: ?embed=1 — clean image, no chrome ---- */
+  body.embed{min-height:0;height:100vh;height:100dvh}
+  body.embed #ui,body.embed #hint,body.embed #back{display:none}
+  /* the phone media query above must not apply here: the embed's own box
+     already sets the shape, so the canvas fills the iframe edge to edge */
+  body.embed #stage{touch-action:auto;flex:1 1 auto;aspect-ratio:auto;max-height:none;min-height:0}
 </style>
 </head>
 <body>
-<div id="ui">
-  <h1>Golden Gate MOSE — v2</h1>
-  <div class="sub">Auto demo playing &mdash; drag or use controls to take over</div>
-  <button id="gateBtn">&#9650; Raise the barriers</button>
-  <div class="row">Storm surge (Pacific side)
-    <input type="range" id="surge" min="0" max="100" value="0">
-  </div>
-  <div class="row">Time of day
-    <input type="range" id="tod" min="0" max="1000" value="150">
-  </div>
-  <label><input type="checkbox" id="auto"> Auto day/night cycle</label>
-  <button id="fogBtn">Toggle Karl the Fog</button>
-  <div id="status"></div>
+<div id="stage">
+  <a id="back" href="index.html">&#8592; Back to the site</a>
+  <div id="hint">drag sideways to orbit &middot; scroll to zoom</div>
 </div>
-<div id="hint">drag to orbit &middot; scroll to zoom</div>
+<div id="ui">
+ <div class="inner">
+  <h1>Golden Gate MOSE — v2</h1>
+  <div class="sub">Auto demo playing &mdash; drag the view or use the controls to take over</div>
+  <div class="bar">
+    <button id="gateBtn">&#9650; Raise the barriers</button>
+    <div class="ctl"><span>Storm surge (Pacific side)</span>
+      <input type="range" id="surge" min="0" max="100" value="0">
+    </div>
+    <div class="ctl"><span>Time of day</span>
+      <input type="range" id="tod" min="0" max="1000" value="150">
+    </div>
+    <label class="chk"><input type="checkbox" id="auto"> Auto day/night</label>
+    <button id="fogBtn" class="minor">Toggle Karl the Fog</button>
+  </div>
+  <div id="status"></div>
+ </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+const EMBED = new URLSearchParams(location.search).has('embed');
+if(EMBED) document.body.classList.add('embed');
+
+const stage = document.getElementById('stage');
+const stageW = ()=>stage.clientWidth || 1;
+const stageH = ()=>stage.clientHeight || 1;
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xb8d4e3);
 let fogOn = true;
 scene.fog = new THREE.FogExp2(0xc4d7e0, 0.0016);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(stageW(), stageH());
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
-const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 1, 4000);
+stage.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(55, stageW()/stageH(), 1, 4000);
+
+// Keep the whole strait in frame at any viewport shape. THREE's fov is
+// VERTICAL, so a narrow box crops the bridge and the shipping lanes off
+// both edges, and a very wide one fisheyes. Work in horizontal terms and
+// clamp: below MIN the bridge won't fit, above MAX it distorts. Between
+// the two this leaves the original 55 exactly as it was on desktop.
+const BASE_VFOV = 55, MIN_HFOV = 78, MAX_HFOV = 100;
+function fitFov(){
+  const aspect = stageW()/stageH();
+  const lo = THREE.MathUtils.degToRad(MIN_HFOV), hi = THREE.MathUtils.degToRad(MAX_HFOV);
+  let h = 2*Math.atan(Math.tan(THREE.MathUtils.degToRad(BASE_VFOV)/2)*aspect);
+  h = Math.min(Math.max(h, lo), hi);
+  camera.fov = THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(h/2)/aspect));
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+}
+fitFov();
 
 // ---------- lights ----------
 const hemi = new THREE.HemisphereLight(0xdfeaf2, 0x2c3e50, 0.85);
@@ -283,7 +347,7 @@ document.getElementById('fogBtn').onclick = ()=>{
 let theta = -0.7, phi = 1.18, radius = 440;
 const target = new THREE.Vector3(0, 15, -60);
 let dragging=false, px=0, py=0;
-addEventListener('mousedown',e=>{if(e.target===renderer.domElement)tourCam=false;dragging=true;px=e.clientX;py=e.clientY});
+renderer.domElement.addEventListener('mousedown',e=>{tourCam=false;dragging=true;px=e.clientX;py=e.clientY});
 addEventListener('mouseup',()=>dragging=false);
 addEventListener('mousemove',e=>{
   if(!dragging) return;
@@ -291,17 +355,39 @@ addEventListener('mousemove',e=>{
   phi = Math.max(0.15, Math.min(1.45, phi));
   px=e.clientX; py=e.clientY;
 });
-addEventListener('wheel',e=>{tourCam=false;radius=Math.max(120,Math.min(1400,radius+e.deltaY*0.5))},{passive:true});
-addEventListener('touchstart',e=>{if(e.target===renderer.domElement)tourCam=false;px=e.touches[0].clientX;py=e.touches[0].clientY});
-addEventListener('touchmove',e=>{
-  theta -= (e.touches[0].clientX-px)*0.005; phi -= (e.touches[0].clientY-py)*0.005;
+stage.addEventListener('wheel',e=>{tourCam=false;radius=Math.max(120,Math.min(1400,radius+e.deltaY*0.5))},{passive:true});
+
+// Touch: lock to one gesture. Sideways drags orbit the camera, vertical
+// swipes are handed back to the page so the model never traps the scroll.
+let touchMode=null, tsx=0, tsy=0;
+stage.addEventListener('touchstart',e=>{
+  if(EMBED) return;
+  const t=e.touches[0]; tsx=px=t.clientX; tsy=py=t.clientY; touchMode=null;
+},{passive:true});
+stage.addEventListener('touchmove',e=>{
+  if(EMBED || e.touches.length>1) return;
+  const t=e.touches[0];
+  if(touchMode===null){
+    const dx=Math.abs(t.clientX-tsx), dy=Math.abs(t.clientY-tsy);
+    if(dx+dy < 8) return;
+    touchMode = dx>dy ? 'orbit' : 'scroll';
+    if(touchMode==='orbit'){ tourCam=false; px=t.clientX; py=t.clientY; }
+  }
+  if(touchMode!=='orbit') return;      // vertical swipe → page scrolls
+  e.preventDefault();
+  theta -= (t.clientX-px)*0.005; phi -= (t.clientY-py)*0.005;
   phi = Math.max(0.15, Math.min(1.45, phi));
-  px=e.touches[0].clientX; py=e.touches[0].clientY;
-});
-addEventListener('resize',()=>{
-  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight);
-});
+  px=t.clientX; py=t.clientY;
+},{passive:false});
+stage.addEventListener('touchend',()=>{touchMode=null},{passive:true});
+
+function resize(){
+  fitFov();
+  renderer.setSize(stageW(), stageH());
+}
+if(window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+addEventListener('resize', resize);
+addEventListener('orientationchange', ()=>setTimeout(resize,150));
 
 // ---------- sky colors ----------
 const cNightSky=new THREE.Color(0x0a1428), cDaySky=new THREE.Color(0xb8d4e3), cDawn=new THREE.Color(0xe8956b);
