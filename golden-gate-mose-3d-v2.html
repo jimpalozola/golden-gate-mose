@@ -40,7 +40,7 @@
      portrait box forces a very wide FOV and the bridge ends up small in
      a lot of empty sky. Pin it to a landscape band instead. */
   @media (max-width:700px){
-    #stage{flex:0 0 auto;width:100%;aspect-ratio:3/2;max-height:58vh}
+    #stage{flex:0 0 auto;width:100%;height:min(66vw,58vh)}
   }
   @media (max-width:520px){
     #gateBtn,#fogBtn{flex:1 1 100%}
@@ -52,7 +52,7 @@
   body.embed #ui,body.embed #hint,body.embed #back{display:none}
   /* the phone media query above must not apply here: the embed's own box
      already sets the shape, so the canvas fills the iframe edge to edge */
-  body.embed #stage{touch-action:auto;flex:1 1 auto;aspect-ratio:auto;max-height:none;min-height:0}
+  body.embed #stage{touch-action:auto;flex:1 1 auto;height:auto;aspect-ratio:auto;max-height:none;min-height:0}
 </style>
 </head>
 <body>

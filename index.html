@@ -11,7 +11,10 @@
   body{font-family:Georgia,'Times New Roman',serif;background:var(--fog);color:#1c2b3a;line-height:1.65}
   /* Model band: a wide, uncluttered moving image. Controls live on the
      dedicated page, so the embed never competes for touch or vertical room. */
-  #model{position:relative;background:#b8d4e3;aspect-ratio:16/10;max-height:60vh;min-height:230px}
+  /* Height is set directly rather than via aspect-ratio: with a max-height
+     cap the ratio wins and the width shrinks to match, leaving the banner
+     narrower than the window. Always full-bleed. */
+  #model{position:relative;background:#b8d4e3;width:100%;height:60vh;min-height:260px}
   #model iframe{width:100%;height:100%;border:0;display:block;pointer-events:none}
   #modelCaption{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;
     justify-content:center;gap:.9rem;flex-wrap:wrap;padding:.9rem 1rem 1.05rem;
@@ -20,7 +23,7 @@
   #modelCaption a{pointer-events:auto;background:var(--gold);color:var(--deep);font-family:Helvetica,Arial,sans-serif;
     font-size:.85rem;font-weight:bold;padding:.5rem 1.05rem;border-radius:6px;text-decoration:none;white-space:nowrap}
   #modelCaption a:hover{filter:brightness(1.1)}
-  @media (max-width:600px){#model{aspect-ratio:4/3;max-height:52vh}}
+  @media (max-width:600px){#model{height:min(75vw,52vh);min-height:230px}}
   header.hero{background:linear-gradient(165deg,var(--teal) 0%,var(--navy) 55%,var(--deep) 100%);border-top:4px solid var(--brick);color:#fff;padding:1.9rem 1.5rem 1.7rem;text-align:center}
   header.hero h1{font-size:clamp(1.5rem,3.5vw,2.3rem);letter-spacing:.02em;margin-bottom:.45rem}
   header.hero h1 span{color:var(--gold)}
