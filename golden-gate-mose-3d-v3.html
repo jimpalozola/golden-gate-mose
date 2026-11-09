@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Golden Gate MOSE — Interactive 3D Model</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0b1520;
+            font-family:-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;color:#eaf2f8}
+  body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+
+  /* ---- canvas band ---- */
+  #stage{position:relative;flex:1 1 auto;min-height:240px;background:#b8d4e3;touch-action:pan-y;overflow:hidden}
+  #stage canvas{display:block;width:100%;height:100%}
+  #hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);
+        font-size:12px;background:rgba(10,20,30,.5);padding:5px 14px;border-radius:20px;pointer-events:none}
+  #back{position:absolute;top:12px;left:12px;z-index:5;color:#f1c40f;text-decoration:none;font-size:13px;
+        font-weight:600;background:rgba(10,20,30,.72);border:1px solid rgba(255,255,255,.2);
+        padding:7px 13px;border-radius:8px}
+  #back:hover{background:rgba(10,20,30,.92)}
+
+  /* ---- water-level gauge (the whole point of the barrier, in two bars) ---- */
+  #gauge{position:absolute;top:12px;right:12px;z-index:5;background:rgba(10,20,30,.72);
+         border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:9px 12px 7px;pointer-events:none;
+         font-size:11px;color:#9fb8c9;text-align:center}
+  #gauge .cols{display:flex;gap:14px;justify-content:center}
+  #gauge .col{width:58px}
+  #gauge b{display:block;font-size:14px;color:#eaf2f8;font-variant-numeric:tabular-nums}
+  #gauge .tube{height:64px;margin:5px auto 4px;width:22px;border-radius:5px;background:rgba(255,255,255,.1);
+               position:relative;overflow:hidden}
+  #gauge .fill{position:absolute;left:0;right:0;bottom:0;height:10%;border-radius:0 0 5px 5px;
+               background:#3fa7d6;transition:background .4s}
+  #gauge .fill.high{background:#e74c3c}
+  #gauge .fill.safe{background:#2ecc71}
+  #gauge small{display:block;margin-top:5px;font-size:10px;opacity:.75}
+
+  /* ---- horizontal control band ---- */
+  #ui{flex:0 0 auto;background:#0e1e2c;border-top:1px solid rgba(255,255,255,.14);padding:12px 14px}
+  #ui .inner{max-width:1100px;margin:0 auto}
+  #ui h1{font-size:14px;margin:0 0 1px}
+  #ui .sub{font-size:11px;color:#9fb8c9;margin-bottom:10px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end}
+  .ctl{flex:1 1 150px;min-width:130px}
+  .ctl span{display:block;font-size:11px;color:#9fb8c9;margin-bottom:3px}
+  input[type=range]{width:100%;margin:0;accent-color:#f1c40f}
+  button{padding:10px 16px;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;
+         background:#f1c40f;color:#222;transition:background .2s;flex:0 0 auto}
+  button.raised{background:#e74c3c;color:#fff}
+  button.minor{background:rgba(255,255,255,.12);color:#eaf2f8;font-weight:500;font-size:12px;padding:8px 12px}
+  .chk{font-size:12px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto;cursor:pointer}
+  #status{margin-top:10px;font-size:12px;line-height:1.5;color:#cfe6f5}
+  .ok{color:#2ecc71;font-weight:700}.warn{color:#e67e22;font-weight:700}.bad{color:#e74c3c;font-weight:700}
+  /* On a phone, don't let the canvas stretch to fill a tall screen: a
+     portrait box forces a very wide FOV and the bridge ends up small in
+     a lot of empty sky. Pin it to a landscape band instead. */
+  @media (max-width:700px){
+    #stage{flex:0 0 auto;width:100%;height:min(66vw,58vh)}
+    #gauge{padding:6px 8px 5px}
+    #gauge .tube{display:none}
+    #gauge b{font-size:12px}
+    #gauge .col{width:50px}
+    #gauge small{display:none}
+  }
+  @media (max-width:520px){
+    #gateBtn,#fogBtn{flex:1 1 100%}
+    #ui .sub{margin-bottom:8px}
+  }
+
+  /* ---- embed mode: ?embed=1 — clean image, no chrome ---- */
+  body.embed{min-height:0;height:100vh;height:100dvh}
+  body.embed #ui,body.embed #hint,body.embed #back,body.embed #gauge{display:none}
+  /* the phone media query above must not apply here: the embed's own box
+     already sets the shape, so the canvas fills the iframe edge to edge */
+  body.embed #stage{touch-action:auto;flex:1 1 auto;height:auto;aspect-ratio:auto;max-height:none;min-height:0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <a id="back" href="index.html">&#8592; Back to the site</a>
+  <div id="gauge">
+    <div class="cols">
+      <div class="col"><b id="gOcean">+0.0 ft</b><div class="tube"><div class="fill" id="fOcean"></div></div>Pacific</div>
+      <div class="col"><b id="gBay">+0.0 ft</b><div class="tube"><div class="fill" id="fBay"></div></div>SF Bay</div>
+    </div>
+    <small>water level &middot; illustrative</small>
+  </div>
+  <div id="hint">drag sideways to orbit &middot; scroll to zoom</div>
+</div>
+<div id="ui">
+ <div class="inner">
+  <h1>Golden Gate MOSE — interactive model</h1>
+  <div class="sub">Auto demo playing &mdash; drag the view or use the controls to take over</div>
+  <div class="bar">
+    <button id="gateBtn">&#9650; Raise the barriers</button>
+    <div class="ctl"><span>Storm surge (Pacific side)</span>
+      <input type="range" id="surge" min="0" max="100" value="0">
+    </div>
+    <div class="ctl"><span>Time of day</span>
+      <input type="range" id="tod" min="0" max="1000" value="150">
+    </div>
+    <label class="chk"><input type="checkbox" id="auto"> Auto day/night</label>
+    <button id="fogBtn" class="minor">Toggle Karl the Fog</button>
+  </div>
+  <div id="status"></div>
+ </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const EMBED = new URLSearchParams(location.search).has('embed');
+if(EMBED) document.body.classList.add('embed');
+
+const stage = document.getElementById('stage');
+const stageW = ()=>stage.clientWidth || 1;
+const stageH = ()=>stage.clientHeight || 1;
+
+const scene = new THREE.Scene();
+let fogOn = true;
+scene.fog = new THREE.FogExp2(0xbcd9ea, 0.0013);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(stageW(), stageH());
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(55, stageW()/stageH(), 1, 5000);
+
+// Keep the whole strait in frame at any viewport shape. THREE's fov is
+// VERTICAL, so a narrow box crops the bridge and the shipping lanes off
+// both edges, and a very wide one fisheyes. Work in horizontal terms and
+// clamp: below MIN the bridge won't fit, above MAX it distorts. Between
+// the two this leaves the original 55 exactly as it was on desktop.
+const BASE_VFOV = 55, MIN_HFOV = 78, MAX_HFOV = 100;
+function fitFov(){
+  const aspect = stageW()/stageH();
+  const lo = THREE.MathUtils.degToRad(MIN_HFOV), hi = THREE.MathUtils.degToRad(MAX_HFOV);
+  let h = 2*Math.atan(Math.tan(THREE.MathUtils.degToRad(BASE_VFOV)/2)*aspect);
+  h = Math.min(Math.max(h, lo), hi);
+  camera.fov = THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(h/2)/aspect));
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+}
+fitFov();
+
+// Orientation: -z is the Pacific (west), +z is the bay (east),
+// +x is Marin (north), -x is San Francisco (south).
+const clamp01 = v=>Math.max(0,Math.min(1,v));
+const smooth = (a,b,v)=>{ const t=clamp01((v-a)/(b-a)); return t*t*(3-2*t); };
+
+// ---------- lights ----------
+const hemi = new THREE.HemisphereLight(0xdfeaf2, 0x3a4a3c, 0.85);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2d9, 1.1);
+sun.castShadow = true;
+sun.shadow.camera.left=-420; sun.shadow.camera.right=420;
+sun.shadow.camera.top=420; sun.shadow.camera.bottom=-420;
+sun.shadow.camera.far=2000;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.bias = -0.0008;
+scene.add(sun);
+const moon = new THREE.DirectionalLight(0x8fa8c8, 0);
+scene.add(moon);
+
+// ---------- sky dome (gradient instead of a flat colour) ----------
+const skyMat = new THREE.ShaderMaterial({
+  side:THREE.BackSide, depthWrite:false, fog:false,
+  uniforms:{ top:{value:new THREE.Color(0x4f8fc4)}, hor:{value:new THREE.Color(0xbcd9ea)} },
+  vertexShader:'varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+  fragmentShader:'uniform vec3 top; uniform vec3 hor; varying vec3 vP; void main(){ float h=clamp(normalize(vP).y,0.0,1.0); gl_FragColor=vec4(mix(hor,top,pow(h,0.5)),1.0); }'
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(2400,24,16), skyMat);
+scene.add(sky);
+
+function glowTexture(inner, outer){
+  const c=document.createElement('canvas'); c.width=c.height=128;
+  const g=c.getContext('2d'), gr=g.createRadialGradient(64,64,0,64,64,64);
+  gr.addColorStop(0,inner); gr.addColorStop(0.25,outer); gr.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=gr; g.fillRect(0,0,128,128);
+  return new THREE.CanvasTexture(c);
+}
+const sunBall = new THREE.Mesh(new THREE.SphereGeometry(30,16,16),
+  new THREE.MeshBasicMaterial({color:0xffe9b0, fog:false}));
+scene.add(sunBall);
+const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+  map:glowTexture('rgba(255,244,214,1)','rgba(255,214,150,.45)'),
+  blending:THREE.AdditiveBlending, depthWrite:false, fog:false, transparent:true}));
+sunGlow.scale.set(520,520,1); scene.add(sunGlow);
+const moonBall = new THREE.Mesh(new THREE.SphereGeometry(20,16,16),
+  new THREE.MeshBasicMaterial({color:0xdfe7f2, fog:false, transparent:true, opacity:0}));
+scene.add(moonBall);
+
+// ---------- stars ----------
+const starPos=[];
+for(let i=0;i<700;i++){
+  const th=Math.random()*Math.PI*2, ph=Math.random()*Math.PI*0.48, r=2100;
+  starPos.push(r*Math.sin(ph)*Math.cos(th), r*Math.cos(ph)+50, r*Math.sin(ph)*Math.sin(th));
+}
+const starGeo = new THREE.BufferGeometry();
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos,3));
+const starMat = new THREE.PointsMaterial({color:0xffffff,size:2.2,transparent:true,opacity:0,sizeAttenuation:false,fog:false});
+scene.add(new THREE.Points(starGeo,starMat));
+
+// ---------- terrain: the two headlands and the seabed, one heightfield ----------
+function hash(i,j){ const s=Math.sin(i*127.1+j*311.7)*43758.5453; return s-Math.floor(s); }
+function vnoise(x,y){
+  const i=Math.floor(x), j=Math.floor(y), fx=x-i, fy=y-j;
+  const u=fx*fx*(3-2*fx), v=fy*fy*(3-2*fy);
+  return (hash(i,j)*(1-u)+hash(i+1,j)*u)*(1-v) + (hash(i,j+1)*(1-u)+hash(i+1,j+1)*u)*v;
+}
+function fbm(x,y){ return vnoise(x,y)*0.55 + vnoise(x*2.1,y*2.1)*0.3 + vnoise(x*4.3,y*4.3)*0.15; }
+
+const BARRIER_Z = -60, SEABED = -18, SHELF = 2.4;
+// half-width of the water at a given z: narrowest at the barrier, opening
+// out to the ocean on one side and (wider) to the bay on the other
+function shore(z, side){
+  const zz = z - BARRIER_Z;
+  const open = 0.0011*zz*zz*(zz>0 ? 1 : 0.55);
+  const wiggle = 16*Math.sin(z*0.009 + side*1.3)*Math.min(1, Math.abs(zz)/200);
+  return 262 + open + wiggle;
+}
+function groundHeight(x, z){
+  const side = x>=0 ? 1 : -1;
+  const d = Math.abs(x) - shore(z, side);
+  if(d <= 0) return Math.max(SEABED, SEABED + (d+40)*0.45);      // underwater bank
+  const n = fbm(x*0.006+11, z*0.006+7);
+  if(side > 0){                                                  // Marin Headlands: tall, steep
+    const H = 55 + 85*n;
+    return H*(1 - Math.exp(-d/(H*0.42)));
+  }
+  const H = 34 + 46*n;                                           // San Francisco side
+  const cliff = H*(1 - Math.exp(-d/(H*0.42)));
+  const shelf = d < 5 ? d*SHELF/5 : SHELF + smooth(140,300,d)*(22+40*n);
+  return cliff + (shelf-cliff)*smooth(60,170,z);                 // flat city waterfront inside the bay
+}
+(function buildTerrain(){
+  const g = new THREE.PlaneGeometry(2600,2600,170,170);
+  g.rotateX(-Math.PI/2);
+  const p = g.attributes.position, col = new Float32Array(p.count*3), c = new THREE.Color();
+  const sand=new THREE.Color(0xb7a47c), rock=new THREE.Color(0x8b7b68), grass=new THREE.Color(0x76874a),
+        gold=new THREE.Color(0x9a9255), urban=new THREE.Color(0x8d949a), park=new THREE.Color(0x5f7d4e),
+        deep=new THREE.Color(0x1e3440);
+  for(let i=0;i<p.count;i++){
+    const x=p.getX(i), z=p.getZ(i), y=groundHeight(x,z);
+    p.setY(i,y);
+    const n = vnoise(x*0.02+3, z*0.02+9);
+    if(y < 0.3) c.copy(deep).lerp(sand, smooth(-8,0.3,y)*0.3);
+    else if(y < 2) c.copy(sand);
+    else if(x > 0) c.copy(grass).lerp(gold, n).lerp(rock, smooth(0.55,0.8,vnoise(x*0.045,z*0.045)));
+    else if(y < SHELF+1.5 && z > 120) c.copy(urban).lerp(park, n*0.35);
+    else c.copy(park).lerp(gold, n*0.5).lerp(rock, smooth(0.6,0.85,vnoise(x*0.045,z*0.045)));
+    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col,3));
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshPhongMaterial({vertexColors:true, flatShading:true, shininess:4}));
+  m.receiveShadow = true;
+  scene.add(m);
+})();
+
+// ---------- San Francisco waterfront (so a rising bay has something to flood) ----------
+const cityMat = new THREE.MeshPhongMaterial({color:0xffffff, emissive:0xffc46b, emissiveIntensity:0});
+(function buildCity(){
+  const COUNT = 170, box = new THREE.BoxGeometry(1,1,1);
+  box.translate(0,0.5,0);
+  const city = new THREE.InstancedMesh(box, cityMat, COUNT);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), pos = new THREE.Vector3();
+  const c = new THREE.Color();
+  for(let i=0;i<COUNT;i++){
+    const z = 185 + Math.random()*420;
+    const d = 10 + Math.random()*125;
+    const x = -(shore(z,-1) + d);
+    const downtown = Math.exp(-Math.pow((z-360)/80,2)) * smooth(20,70,d);
+    const h = 5 + Math.random()*9 + downtown*(20+Math.random()*55);
+    s.set(9+Math.random()*9, h, 9+Math.random()*9);
+    pos.set(x, groundHeight(x,z)-0.3, z);
+    m4.compose(pos, q, s); city.setMatrixAt(i, m4);
+    c.setHSL(0.58, 0.06, 0.62+Math.random()*0.25); city.setColorAt(i, c);
+  }
+  city.castShadow = city.receiveShadow = true;
+  scene.add(city);
+})();
+
+// ---------- water ----------
+const cDayOcean=new THREE.Color(0x16587a), cNightOcean=new THREE.Color(0x061826), cStormOcean=new THREE.Color(0x2b4a52);
+const cDayBay=new THREE.Color(0x1f7696), cNightBay=new THREE.Color(0x08202e);
+function makeWater(color){
+  const g = new THREE.PlaneGeometry(2600, 1300, 100, 50);
+  const mesh = new THREE.Mesh(g, new THREE.MeshPhongMaterial({color, transparent:true, opacity:0.88,
+    shininess:90, specular:0x1b2a33}));
+  mesh.rotation.x = -Math.PI/2;
+  mesh.userData.base = g.attributes.position.array.slice();
+  return mesh;
+}
+const oceanWater = makeWater(0x16587a); oceanWater.position.set(0,0,BARRIER_Z-650);
+const bayWater   = makeWater(0x1f7696); bayWater.position.set(0,0,BARRIER_Z+650);
+scene.add(oceanWater, bayWater);
+function waveUpdate(mesh, t, amp){
+  const p = mesh.geometry.attributes.position, b = mesh.userData.base;
+  for(let i=0;i<p.count;i++){
+    const x=b[i*3], y=b[i*3+1];
+    p.array[i*3+2] = Math.sin(x*0.012+t*1.3)*amp + Math.cos(y*0.02+t*0.9)*amp*0.6
+                   + Math.sin((x+y)*0.037+t*1.9)*amp*0.22;
+  }
+  p.needsUpdate = true;
+  mesh.geometry.computeVertexNormals();
+}
+// the step between the two water levels, and the foam where the sea piles up on the gates
+const stepMat = new THREE.MeshBasicMaterial({color:0xcfe8f2, transparent:true, opacity:0.5, side:THREE.DoubleSide});
+const step = new THREE.Mesh(new THREE.PlaneGeometry(524,1), stepMat);
+step.position.z = BARRIER_Z; scene.add(step);
+function foamTexture(){
+  const c=document.createElement('canvas'); c.width=512; c.height=32;
+  const g=c.getContext('2d');
+  for(let i=0;i<260;i++){
+    const y=Math.random()*32;
+    g.fillStyle='rgba(255,255,255,'+(0.25+0.6*(y/32))*Math.random()+')';
+    g.beginPath(); g.ellipse(Math.random()*512, y, 3+Math.random()*10, 1+Math.random()*2.5, 0, 0, 7); g.fill();
+  }
+  const t=new THREE.CanvasTexture(c); t.wrapS=THREE.RepeatWrapping; t.repeat.x=3; return t;
+}
+const foamMat = new THREE.MeshBasicMaterial({map:foamTexture(), transparent:true, opacity:0, depthWrite:false});
+const foam = new THREE.Mesh(new THREE.PlaneGeometry(512,16), foamMat);
+foam.rotation.x = -Math.PI/2; foam.position.z = BARRIER_Z-10; scene.add(foam);
+
+// ---------- Golden Gate Bridge ----------
+const orange = new THREE.MeshPhongMaterial({color:0xc0362c, shininess:18});
+const orangeDark = new THREE.MeshPhongMaterial({color:0x9c2f26, shininess:10});
+const concrete = new THREE.MeshPhongMaterial({color:0xb9b4a8, flatShading:true});
+const bridge = new THREE.Group(); scene.add(bridge);
+const TOWER_X = 140, DECK_END = 292, DECK_Y = 37, CABLE_TOP = 116;
+const deck = new THREE.Mesh(new THREE.BoxGeometry(DECK_END*2,2,18), orange);
+deck.position.y = DECK_Y; deck.castShadow = true; bridge.add(deck);
+const truss = new THREE.Mesh(new THREE.BoxGeometry(DECK_END*2,5,14), orangeDark);
+truss.position.y = DECK_Y-3.5; truss.castShadow = true; bridge.add(truss);
+const road = new THREE.Mesh(new THREE.BoxGeometry(DECK_END*2,0.4,13),
+  new THREE.MeshPhongMaterial({color:0x37474f}));
+road.position.y = DECK_Y+1.15; bridge.add(road);
+function tower(x){
+  const g = new THREE.Group();
+  // stepped Art Deco legs: each section a little slimmer than the one below
+  [[-18,52,9],[52,88,7.8],[88,118,6.6]].forEach(([y0,y1,w])=>{
+    [-8,8].forEach(z=>{
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(w,y1-y0,w), orange);
+      leg.position.set(0,(y0+y1)/2,z); leg.castShadow = true; g.add(leg);
+    });
+  });
+  [[28,7],[56,7],[80,6],[100,5.5],[114,5]].forEach(([y,h])=>{
+    const b = new THREE.Mesh(new THREE.BoxGeometry(6,h,17), orange);
+    b.position.set(0,y,0); b.castShadow = true; g.add(b);
+  });
+  const pier = new THREE.Mesh(new THREE.BoxGeometry(22,24,38), concrete);
+  pier.position.set(0,-7,0); pier.castShadow = pier.receiveShadow = true; g.add(pier);
+  g.position.x = x; bridge.add(g);
+}
+tower(-TOWER_X); tower(TOWER_X);
+[-1,1].forEach(s=>{                                   // anchorages where the deck meets the land
+  const a = new THREE.Mesh(new THREE.BoxGeometry(34,30,26), concrete);
+  a.position.set(s*(DECK_END+6), DECK_Y-17, 0); a.castShadow = a.receiveShadow = true; bridge.add(a);
+});
+function cableY(x){
+  const ax = Math.abs(x);
+  if(ax<=TOWER_X) return DECK_Y+7 + (CABLE_TOP-DECK_Y-7)*Math.pow(x/TOWER_X,2);
+  const t = (DECK_END-ax)/(DECK_END-TOWER_X);
+  return DECK_Y+3 + (CABLE_TOP-DECK_Y-3)*t*t;
+}
+[-8,8].forEach(z=>{
+  const pts=[];
+  for(let x=-DECK_END;x<=DECK_END;x+=8) pts.push(new THREE.Vector3(x,cableY(x),z));
+  const cable = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),140,0.9,6), orange);
+  cable.castShadow = true; bridge.add(cable);
+  for(let x=-DECK_END+10;x<=DECK_END-10;x+=10){
+    const h = cableY(x)-DECK_Y-1;
+    if(h<1.5) continue;
+    const s = new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,h,4), orange);
+    s.position.set(x,DECK_Y+1+h/2,z); bridge.add(s);
+  }
+});
+
+// deck lamps + tower beacons + cable lights (glow at night)
+const lampMat = new THREE.MeshBasicMaterial({color:0xffd27f, transparent:true, opacity:0, fog:false});
+for(let x=-275;x<=275;x+=25){
+  [-9,9].forEach(z=>{
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.9,6,6), lampMat);
+    l.position.set(x,DECK_Y+3.5,z); bridge.add(l);
+  });
+}
+const beaconMat = new THREE.MeshBasicMaterial({color:0xff3b30, transparent:true, opacity:0, fog:false});
+[-TOWER_X,TOWER_X].forEach(x=>{
+  const b = new THREE.Mesh(new THREE.SphereGeometry(1.6,8,8), beaconMat);
+  b.position.set(x,119.5,0); bridge.add(b);
+});
+const cableLightMat = new THREE.MeshBasicMaterial({color:0xfff3c4, transparent:true, opacity:0, fog:false});
+[-8,8].forEach(z=>{
+  for(let x=-280;x<=280;x+=20){
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.7,5,5), cableLightMat);
+    l.position.set(x,cableY(x)+1,z); bridge.add(l);
+  }
+});
+
+// little cars
+const cars=[];
+const carColors=[0xffffff,0x90caf9,0xef9a9a,0xfff59d,0xa5d6a7,0xb39ddb];
+for(let i=0;i<10;i++){
+  const c = new THREE.Mesh(new THREE.BoxGeometry(6,2.2,3),
+    new THREE.MeshPhongMaterial({color:carColors[i%6]}));
+  c.position.set(-280+i*56, DECK_Y+2.4, i%2?3.5:-3.5);
+  c.userData.dir = i%2?1:-1;
+  bridge.add(c); cars.push(c);
+}
+
+// ---------- MOSE barrier ----------
+// As in Venice: each gate is hinged along its seaward edge, lies flat in a
+// recess on the seabed, and floats up to lean toward the protected side.
+const gates=[], N=22, gateW=21.5, spacing=23, GATE_LEN=38, HINGE_Z=BARRIER_Z-16, HINGE_Y=-15;
+const RAISE = THREE.MathUtils.degToRad(50);
+const gateMat = new THREE.MeshPhongMaterial({color:0xf2c230, emissive:0x3a2c00, shininess:30});
+const ribMat = new THREE.MeshPhongMaterial({color:0xc99a12});
+const caissonMat = new THREE.MeshPhongMaterial({color:0x60757f, flatShading:true});
+const hingeMat = new THREE.MeshPhongMaterial({color:0x37474f});
+for(let i=0;i<N;i++){
+  const x = (i-(N-1)/2)*spacing;
+  const caisson = new THREE.Mesh(new THREE.BoxGeometry(spacing,6,46), caissonMat);
+  caisson.position.set(x,HINGE_Y-4.5,BARRIER_Z); caisson.receiveShadow = true;
+  scene.add(caisson);
+  const g = new THREE.Group();
+  g.position.set(x,HINGE_Y,HINGE_Z);
+  const flap = new THREE.Mesh(new THREE.BoxGeometry(gateW,3,GATE_LEN), gateMat);
+  flap.position.z = GATE_LEN/2; flap.castShadow = true; g.add(flap);
+  [9,19,29].forEach(z=>{                                // stiffening ribs, so it reads as steel
+    const rib = new THREE.Mesh(new THREE.BoxGeometry(gateW+0.2,3.3,1.1), ribMat);
+    rib.position.z = z; g.add(rib);
+  });
+  [-6,6].forEach(hx=>{
+    const h = new THREE.Mesh(new THREE.CylinderGeometry(1.8,1.8,3.5,8), hingeMat);
+    h.rotation.z = Math.PI/2; h.position.set(hx,0,0); g.add(h);
+  });
+  scene.add(g); gates.push(g);
+}
+[-1,1].forEach(s=>{                                     // abutments + control buildings at each shore
+  const a = new THREE.Mesh(new THREE.BoxGeometry(30,34,52), concrete);
+  a.position.set(s*(N*spacing/2+13), -3, BARRIER_Z); a.castShadow = a.receiveShadow = true; scene.add(a);
+  const hut = new THREE.Mesh(new THREE.BoxGeometry(16,8,22),
+    new THREE.MeshPhongMaterial({color:0xe9edf0}));
+  hut.position.set(s*(N*spacing/2+15), 18, BARRIER_Z); hut.castShadow = true; scene.add(hut);
+});
+
+// ---------- cargo ships ----------
+const boxColors=[0xd35400,0x2980b9,0x27ae60,0xc0392b,0x8e44ad,0xf39c12];
+const ships=[];
+const hullShape = new THREE.Shape();
+hullShape.moveTo(-8,30); hullShape.lineTo(8,30); hullShape.lineTo(8,-20);
+hullShape.lineTo(0,-40); hullShape.lineTo(-8,-20); hullShape.closePath();
+const hullGeo = new THREE.ExtrudeGeometry(hullShape,{depth:1,bevelEnabled:false});
+hullGeo.rotateX(-Math.PI/2);                            // bow now points to +z (into the bay)
+const hullMat = new THREE.MeshPhongMaterial({color:0x26323a});
+const keelMat = new THREE.MeshPhongMaterial({color:0x8e2b23});
+function makeShip(){
+  const g = new THREE.Group();
+  const keel = new THREE.Mesh(hullGeo, keelMat); keel.scale.y = 3; keel.position.y = -2.5; g.add(keel);
+  const hull = new THREE.Mesh(hullGeo, hullMat); hull.scale.y = 5; hull.position.y = 0.5; hull.castShadow = true; g.add(hull);
+  for(let r=0;r<2;r++) for(let c=0;c<4;c++){
+    const stack = 1+Math.floor(Math.random()*3);
+    for(let s=0;s<stack;s++){
+      const box = new THREE.Mesh(new THREE.BoxGeometry(6.5,3.6,10),
+        new THREE.MeshPhongMaterial({color:boxColors[(r*4+c+s)%6]}));
+      box.position.set(r?3.6:-3.6, 7.3+s*3.6, -14+c*11);
+      box.castShadow = true; g.add(box);
+    }
+  }
+  const house = new THREE.Mesh(new THREE.BoxGeometry(13,11,7),
+    new THREE.MeshPhongMaterial({color:0xeceff1}));
+  house.position.set(0,11,-24); g.add(house);
+  const funnel = new THREE.Mesh(new THREE.BoxGeometry(3.5,5,3.5),
+    new THREE.MeshPhongMaterial({color:0xd35400}));
+  funnel.position.set(0,19,-25); g.add(funnel);
+  const shipLight = new THREE.Mesh(new THREE.SphereGeometry(0.9,5,5),
+    new THREE.MeshBasicMaterial({color:0xfff3c4, transparent:true, opacity:0, fog:false}));
+  shipLight.position.set(0,18,-21); g.add(shipLight);
+  g.userData.light = shipLight;
+  return g;
+}
+const lanes=[-65,0,65];
+for(let i=0;i<5;i++){
+  const s = makeShip();
+  s.position.set(lanes[i%3], 0, -350-i*220-Math.random()*80);
+  s.userData.speed = 33+Math.random()*15;                // units per second
+  scene.add(s); ships.push(s);
+}
+
+// ---------- place labels (full page only; the embed stays a clean image) ----------
+function makeLabel(text, x, y, z, w){
+  const c=document.createElement('canvas'); c.width=512; c.height=72;
+  const g=c.getContext('2d');
+  g.font='600 34px -apple-system,Helvetica,Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.shadowColor='rgba(0,20,40,.9)'; g.shadowBlur=10;
+  g.fillStyle='rgba(255,255,255,.92)';
+  if(g.letterSpacing!==undefined) g.letterSpacing='5px';
+  g.fillText(text,256,38);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c), transparent:true,
+    depthWrite:false, fog:false, opacity:0.85, sizeAttenuation:false}));
+  s.position.set(x,y,z); s.scale.set(w, w*72/512, 1);
+  scene.add(s); return s;
+}
+if(!EMBED){
+  makeLabel('PACIFIC OCEAN', 0, 14, -330, 0.26);
+  makeLabel('SAN FRANCISCO BAY', 0, 14, 240, 0.3);
+  makeLabel('MARIN HEADLANDS', 420, 150, -40, 0.28);
+  makeLabel('SAN FRANCISCO', -520, 95, 360, 0.26);
+}
+
+// ---------- state & UI ----------
+let gateTarget = 0, gateProg = 0, surge = 0, bayLevel = 0;
+let dayT = 0.15;
+const gateBtn = document.getElementById('gateBtn');
+const surgeEl = document.getElementById('surge');
+const todEl = document.getElementById('tod');
+const autoEl = document.getElementById('auto');
+const statusEl = document.getElementById('status');
+const gOcean = document.getElementById('gOcean'), gBay = document.getElementById('gBay');
+const fOcean = document.getElementById('fOcean'), fBay = document.getElementById('fBay');
+function setGates(v){
+  gateTarget = v;
+  gateBtn.textContent = gateTarget ? '▼ Lower the barriers' : '▲ Raise the barriers';
+  gateBtn.classList.toggle('raised', !!gateTarget);
+}
+// ---------- auto demo (camera tour + story) ----------
+let tourCam = true;    // camera circles the bridge until the user drags/zooms
+let tourStory = true;  // surge builds, gates deploy, ships queue — until user touches controls
+let tourT = 0, demoSurge = 0;
+gateBtn.onclick = ()=>{ tourStory = false; setGates(gateTarget ? 0 : 1); };
+surgeEl.oninput = ()=>{ tourStory = false; };
+todEl.oninput = ()=>{ autoEl.checked = false; };
+document.getElementById('fogBtn').onclick = ()=>{ fogOn = !fogOn; };
+
+// ---------- camera orbit ----------
+let theta = -0.7, phi = 1.18, radius = 440;
+const target = new THREE.Vector3(0, 15, -60);
+let dragging=false, px=0, py=0;
+renderer.domElement.addEventListener('mousedown',e=>{tourCam=false;dragging=true;px=e.clientX;py=e.clientY});
+addEventListener('mouseup',()=>dragging=false);
+addEventListener('mousemove',e=>{
+  if(!dragging) return;
+  theta -= (e.clientX-px)*0.005; phi -= (e.clientY-py)*0.005;
+  phi = Math.max(0.15, Math.min(1.45, phi));
+  px=e.clientX; py=e.clientY;
+});
+stage.addEventListener('wheel',e=>{tourCam=false;radius=Math.max(120,Math.min(950,radius+e.deltaY*0.5))},{passive:true});
+
+// Touch: lock to one gesture. Sideways drags orbit the camera, vertical
+// swipes are handed back to the page so the model never traps the scroll.
+let touchMode=null, tsx=0, tsy=0;
+stage.addEventListener('touchstart',e=>{
+  if(EMBED) return;
+  const t=e.touches[0]; tsx=px=t.clientX; tsy=py=t.clientY; touchMode=null;
+},{passive:true});
+stage.addEventListener('touchmove',e=>{
+  if(EMBED || e.touches.length>1) return;
+  const t=e.touches[0];
+  if(touchMode===null){
+    const dx=Math.abs(t.clientX-tsx), dy=Math.abs(t.clientY-tsy);
+    if(dx+dy < 8) return;
+    touchMode = dx>dy ? 'orbit' : 'scroll';
+    if(touchMode==='orbit'){ tourCam=false; px=t.clientX; py=t.clientY; }
+  }
+  if(touchMode!=='orbit') return;      // vertical swipe → page scrolls
+  e.preventDefault();
+  theta -= (t.clientX-px)*0.005; phi -= (t.clientY-py)*0.005;
+  phi = Math.max(0.15, Math.min(1.45, phi));
+  px=t.clientX; py=t.clientY;
+},{passive:false});
+stage.addEventListener('touchend',()=>{touchMode=null},{passive:true});
+
+function resize(){
+  fitFov();
+  renderer.setSize(stageW(), stageH());
+}
+if(window.ResizeObserver) new ResizeObserver(resize).observe(stage);
+addEventListener('resize', resize);
+addEventListener('orientationchange', ()=>setTimeout(resize,150));
+
+// ---------- sky colors ----------
+const cNightTop=new THREE.Color(0x050b1a), cNightHor=new THREE.Color(0x0f1f38);
+const cDayTop=new THREE.Color(0x4f8fc4),  cDayHor=new THREE.Color(0xbcd9ea);
+const cDawn=new THREE.Color(0xf0a070);
+const cStormTop=new THREE.Color(0x4b5761), cStormHor=new THREE.Color(0x8d989f);
+const FT_PER_UNIT = 10/7;   // gauge scale: full surge reads as +10 ft (illustrative)
+
+// ---------- animate ----------
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.1);
+  const t = clock.getElapsedTime();
+  surge = surgeEl.value/100;
+
+  // auto demo: surge builds, gates deploy, ships queue; camera circles both sides
+  tourT += dt;
+  if(tourStory){
+    const cycle = tourT % 70;
+    const surgeTarget = (cycle > 4 && cycle < 44) ? 70 : 8;
+    demoSurge += (surgeTarget - demoSurge)*dt*0.35;
+    surgeEl.value = Math.round(demoSurge);
+    surge = demoSurge/100;
+    if(cycle > 8 && cycle < 44 && !gateTarget) setGates(1);
+    if(cycle >= 44 && gateTarget) setGates(0);
+  }
+  if(tourCam){
+    theta = -0.7 + tourT*0.09;                // one full circle per ~70s cycle
+    phi = 1.05 + 0.22*Math.sin(tourT*0.13);   // gentle rise and dip
+    radius = 430 + 120*Math.sin(tourT*0.07);  // ease closer, then back out
+  }
+
+  // time of day — the sun rises over the bay (east) and sets over the Pacific
+  if(autoEl.checked){
+    dayT = (dayT + dt/75) % 1;
+    todEl.value = Math.round(dayT*1000);
+  } else {
+    dayT = todEl.value/1000;
+  }
+  const angle = dayT*Math.PI*2;
+  const sunH = Math.sin(angle);
+  const day = Math.max(0, sunH), night = Math.max(0, -sunH);
+  const twilight = Math.max(0, 1-Math.abs(sunH)*3.5);
+  const storm = surge*0.8;
+  sun.position.set(-240, sunH*520, Math.cos(angle)*620);
+  sunBall.position.copy(sun.position).multiplyScalar(2.3);
+  sunBall.material.color.setHex(sunH<0.25?0xff9d5c:0xffe9b0);
+  sunBall.visible = sunGlow.visible = sunH > -0.06;
+  sunGlow.position.copy(sunBall.position);
+  sunGlow.material.opacity = (1-storm*0.7)*(0.55+twilight*0.45);
+  sunGlow.material.color.setHex(sunH<0.25?0xffb27a:0xffffff);
+  sun.intensity = day*1.15*(1-storm*0.55);
+  moon.position.set(240, -sunH*520, -Math.cos(angle)*620);
+  moonBall.position.copy(moon.position).multiplyScalar(2.3);
+  moonBall.material.opacity = Math.min(1, night*2.5);
+  moon.intensity = night*0.5;
+  hemi.intensity = 0.34 + day*0.51*(1-storm*0.25);
+
+  skyMat.uniforms.top.value.copy(cNightTop).lerp(cDayTop, day).lerp(cStormTop, storm*day);
+  const hor = skyMat.uniforms.hor.value;
+  hor.copy(cNightHor).lerp(cDayHor, day).lerp(cDawn, twilight*0.6).lerp(cStormHor, storm*day);
+  scene.fog.color.copy(hor);
+  scene.fog.density = (fogOn ? 0.0013 : 0.0003) + storm*0.0007;
+
+  starMat.opacity = night*(1-storm*0.6);
+  lampMat.opacity = Math.min(1, night*1.4 + twilight*0.6);
+  cableLightMat.opacity = lampMat.opacity;
+  cityMat.emissiveIntensity = lampMat.opacity*0.55;
+  beaconMat.opacity = night * (Math.sin(t*3.5)>0 ? 1 : 0.15);
+  oceanWater.material.color.copy(cDayOcean).lerp(cStormOcean, storm).lerp(cNightOcean, night*0.85);
+  bayWater.material.color.copy(cDayBay).lerp(cNightBay, night*0.85);
+
+  // gates: they rise one after another along the row, as in Venice
+  gateProg = clamp01(gateProg + (gateTarget ? 1 : -1)*dt/6);
+  gates.forEach((g,i)=>{
+    const a = smooth(0, 1, gateProg*1.5 - (i/(N-1))*0.5);
+    g.rotation.x = -(a*RAISE + Math.sin(t*1.5+i*1.7)*0.022*a*(0.5+surge));
+  });
+  const gateUp = gateProg > 0.15;
+  const closed = smooth(0.6, 1, gateProg);
+  const protectedBay = gateProg > 0.97;
+
+  // water levels
+  const oceanLevel = surge*7;
+  const bayTargetLevel = 0.3*closed + oceanLevel*0.85*(1-closed);
+  bayLevel += (bayTargetLevel-bayLevel)*(1-Math.exp(-dt*0.6));
+  oceanWater.position.y = oceanLevel;
+  bayWater.position.y = bayLevel;
+  waveUpdate(oceanWater, t, 1.0 + surge*2.4);
+  waveUpdate(bayWater, t, 0.6 + (1-closed)*surge*1.2);
+  const head = oceanLevel - bayLevel;
+  step.scale.y = Math.max(0.01, Math.abs(head));
+  step.position.y = (oceanLevel+bayLevel)/2;
+  step.visible = Math.abs(head) > 0.25;
+  foam.position.y = oceanLevel + 0.6 + surge*1.2;
+  foamMat.opacity = closed*Math.min(0.85, 0.2 + Math.max(0,head)*0.13);
+  foamMat.map.offset.x = t*0.03;
+
+  // ships: queue at the barrier when gates are up
+  const waiting = ships.filter(s=>s.position.z < -110).sort((a,b)=>b.position.z-a.position.z);
+  let queued = 0;
+  ships.forEach(s=>{
+    const z = s.position.z;
+    let canMove = true;
+    if(z < -110){
+      const qi = waiting.indexOf(s);
+      const stopZ = -170 - qi*95;
+      if(gateUp && z >= stopZ-2){ canMove = false; queued++; }
+    }
+    if(canMove) s.position.z += s.userData.speed*dt*(1+surge*0.3);
+    const bob = Math.sin(t*1.2 + s.position.z*0.05);
+    s.position.y = (z < BARRIER_Z ? oceanLevel : bayLevel) + bob*(0.4+surge*0.5);
+    s.rotation.z = bob*0.015*(1+surge*2); s.rotation.x = Math.cos(t + z*0.03)*0.01*(1+surge*2);
+    s.userData.light.material.opacity = night;
+    if(s.position.z > 560){
+      s.position.z = -900 - Math.random()*350;
+      s.position.x = lanes[Math.floor(Math.random()*3)];
+    }
+  });
+
+  // cars
+  cars.forEach(c=>{
+    c.position.x += c.userData.dir*54*dt;
+    if(c.position.x>288) c.position.x=-288;
+    if(c.position.x<-288) c.position.x=288;
+  });
+
+  // gauge + status
+  const surgePct = Math.round(surge*100);
+  const oFt = oceanLevel*FT_PER_UNIT, bFt = bayLevel*FT_PER_UNIT;
+  const flooding = bayLevel > SHELF;     // the bay is over the San Francisco waterfront
+  gOcean.textContent = '+'+oFt.toFixed(1)+' ft';
+  gBay.textContent = '+'+Math.max(0,bFt).toFixed(1)+' ft';
+  fOcean.style.height = (10+oFt*8.5)+'%';
+  fBay.style.height = (10+Math.max(0,bFt)*8.5)+'%';
+  fOcean.className = 'fill'+(surgePct>30?' high':'');
+  fBay.className = 'fill'+(flooding?' high':(protectedBay && surgePct>30?' safe':''));
+  const hour = Math.round(((dayT*24 + 6) % 24)*10)/10;
+  const hh = Math.floor(hour), mm = Math.round((hour-hh)*60);
+  let s = `Clock: <b>${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}</b> &middot; `;
+  s += `Barriers: <b>${gateProg>0.97?'RAISED':gateProg<0.03?'lowered':'moving…'}</b><br>`;
+  s += `Pacific surge: <b>${surgePct}%</b> &middot; Ships queued: <b>${queued}</b><br>`;
+  if(surgePct>30 && protectedBay) s += `<span class="ok">SF Bay protected ✓ &mdash; the sea is ${Math.max(0,oFt-bFt).toFixed(1)} ft higher outside the gates</span>`;
+  else if(flooding) s += `<span class="bad">Bay flooding the waterfront! Raise the barriers!</span>`;
+  else if(surgePct>30) s += `<span class="warn">Surge entering the bay…</span>`;
+  else if(queued>2) s += `<span class="warn">Harbor pilots are grumbling…</span>`;
+  else s += `Calm seas.`;
+  statusEl.innerHTML = s;
+
+  // camera (never let it sink into a hillside)
+  const cx = target.x + radius*Math.sin(phi)*Math.sin(theta);
+  const cz = target.z + radius*Math.sin(phi)*Math.cos(theta);
+  const cy = Math.max(target.y + radius*Math.cos(phi), groundHeight(cx,cz)+14, oceanLevel+8);
+  camera.position.set(cx, cy, cz);
+  camera.lookAt(target);
+  sky.position.copy(camera.position);
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>
