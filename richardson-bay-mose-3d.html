@@ -144,6 +144,9 @@ const W=960, H=805;
 const WATER=[[190,0],[300,0],[305,60],[320,110],[350,130],[380,112],[410,60],[420,0],[455,0],[540,60],[552,100],[500,140],[470,175],[478,205],[520,235],[560,246],[610,222],[680,212],[735,232],[760,262],[735,292],[718,322],[742,352],[790,382],[840,410],[880,440],[930,470],[948,481],[955,440],[946,350],[934,300],[927,200],[926,100],[932,0],[960,0],[960,650],[870,652],[820,700],[760,702],[700,690],[650,662],[612,612],[590,580],[560,552],[520,515],[472,470],[447,432],[452,402],[440,372],[405,336],[366,302],[330,287],[300,292],[280,286],[252,256],[222,200],[203,150],[192,100]];
 const MARSH=[[40,0],[190,0],[192,100],[203,150],[222,200],[252,256],[280,286],[250,300],[200,310],[140,320],[100,300],[70,240],[50,120]];
 const FILL=[[280,286],[300,292],[330,287],[366,302],[405,336],[440,372],[452,402],[447,432],[472,470],[520,515],[560,552],[590,580],[612,612],[640,680],[600,700],[560,640],[480,560],[400,480],[330,420],[280,370],[200,340],[150,330],[200,310],[250,300]];
+const A_PX=[579,570], B_PX=[837,415];                       // gate line: Marin City shore -> Strawberry Point (~2,700 ft)
+const sidePx=(px,py)=>(B_PX[0]-A_PX[0])*(py-A_PX[1])-(B_PX[1]-A_PX[1])*(px-A_PX[0]);   // >= 0 : seaward side
+const R101_PX=[[625,980],[620,805],[612,700],[590,620],[545,563],[485,513],[432,472],[385,435],[350,400],[325,350],[312,285],[308,150],[305,0],[303,-300]];
 function inPoly(x,y,P){
   let c=false;
   for(let i=0,j=P.length-1;i<P.length;j=i++){
@@ -165,6 +168,7 @@ for(let i=0;i<WATER.length;i++){
   SHORE.push([a,b]);
 }
 function polyEdgeDist(x,y,P){ let d=1e9; for(let i=0;i<P.length;i++){ const v=segDist(x,y,P[i],P[(i+1)%P.length]); if(v<d) d=v; } return d; }
+function roadDist(x,y){ let d=1e9; for(let i=0;i<R101_PX.length-1;i++){ const v=segDist(x,y,R101_PX[i],R101_PX[i+1]); if(v<d) d=v; } return d; }
 function shoreDist(x,y){ let d=1e9; for(const [a,b] of SHORE){ const s=segDist(x,y,a,b); if(s<d) d=s; } return d; }
 const cx=v=>Math.max(0.5,Math.min(W-0.5,v)), cy=v=>Math.max(0.5,Math.min(H-0.5,v));
 function isWater(px,py){
@@ -200,7 +204,13 @@ function groundPx(px,py){
     const e = Math.min(polyEdgeDist(px,py,FILL), polyEdgeDist(px,py,MARSH));
     const k = smooth(0,40,e); amp *= k; low = 0.9 + (low-0.9)*k;
   }
-  if(out===0 && inPoly(px,py,FILL)) return 0.8 + Math.min(d,40)*0.006 + n*0.15;   // low Bay fill: Manzanita, the 101 shoulder, Marin City shore
+  if(out===0 && inPoly(px,py,FILL)){
+    const rd=roadDist(px,py);
+    let h = sidePx(px,py)>=0 ? 3.0 + Math.min(d,40)*0.01 + n*0.2      // Marin City / Donahue side: above storm tides
+                             : 0.8 + Math.min(d,40)*0.006 + n*0.15;   // Manzanita lot, Hwy 1 ramp: floods
+    if(rd<14) h=Math.max(h, 3.0 + (rd<7?0:-(rd-7)*0.3));             // US-101 embankment
+    return h;
+  }   // low Bay fill: Manzanita, the 101 shoulder, Marin City shore
   return low + n*0.4 + amp*(1-Math.exp(-Math.max(0,d-12)/45))*(0.75+0.5*n);
 }
 const toPx = (x,z)=>[x+480, z+402];
@@ -313,7 +323,6 @@ const ZONES=[
 })();
 
 // ---------- the gate line ----------
-const A_PX=[579,570], B_PX=[837,415];                       // Marin City shore -> Strawberry Point (~2,700 ft)
 const A=new THREE.Vector2(A_PX[0]-480, A_PX[1]-402), B=new THREE.Vector2(B_PX[0]-480, B_PX[1]-402);
 const LINE_LEN = A.distanceTo(B);
 const U = new THREE.Vector2().subVectors(A,B).normalize();   // runs B->A, so local +z points inside
@@ -409,7 +418,7 @@ const leaves=[];
 });
 
 // ---------- US-101 and the Richardson Bay Bridge ----------
-const R101=[[625,980],[620,805],[612,700],[590,620],[545,563],[485,513],[432,472],[385,435],[350,400],[325,350],[312,285],[308,150],[305,0],[303,-300]]
+const R101=R101_PX
   .map(([px,py])=>new THREE.Vector2(px-480,py-402));
 const roadPts=[], cum=[0];
 for(let i=0;i<R101.length-1;i++){
@@ -421,7 +430,7 @@ for(let i=1;i<roadPts.length;i++) cum.push(cum[i-1]+roadPts[i].distanceTo(roadPt
 const ROAD_LEN=cum[cum.length-1];
 function deckY(p){ const py=p.y+402, g=groundHeight(p.x,p.y);
   const bridge = py<285 ? 7 : py<350 ? 7-(py-285)/65*6.2 : 0;
-  return Math.max(g+0.35, bridge, 0.8); }
+  return Math.max(g+0.35, bridge, 3.3); }
 const roadY=roadPts.map(deckY);
 function roadAt(s){
   s=Math.max(0,Math.min(ROAD_LEN-0.01,s));
